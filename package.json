@@ -1,34 +1,21 @@
 {
-  "name": "react-router",
-  "version": "4.3.0-rc.3",
-  "description": "Declarative routing for React",
-  "repository": "ReactTraining/react-router",
+  "name": "react-live-route",
+  "version": "1.0.0",
+  "description": "A living route for react-router-v4",
+  "repository": "fi3ework/react-live-route",
   "license": "MIT",
-  "authors": [
-    "Michael Jackson",
-    "Ryan Florence"
-  ],
+  "authors": "fi3ework",
   "files": [
-    "MemoryRouter.js",
-    "Prompt.js",
-    "Redirect.js",
-    "Route.js",
-    "Router.js",
-    "StaticRouter.js",
-    "Switch.js",
-    "es",
     "index.js",
-    "generatePath.js",
     "matchPath.js",
-    "withRouter.js",
-    "umd"
+    "LiveRoute.js"
   ],
   "main": "index.js",
   "module": "es/index.js",
   "sideEffects": false,
   "scripts": {
     "build": "node ./tools/build.js",
-    "watch": "babel ./modules -d . --ignore __tests__ --watch",
+    "watch": "babel ./modules -d . --ignore react-router --watch",
     "prepublishOnly": "node ./tools/build.js",
     "clean": "git clean -fdX .",
     "lint": "eslint modules",
@@ -89,6 +76,7 @@
     "route",
     "routing",
     "history",
-    "link"
+    "link",
+    "react-live-route"
   ]
 }

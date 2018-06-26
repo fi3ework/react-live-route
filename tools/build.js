@@ -1,42 +1,19 @@
-const fs = require('fs')
-const execSync = require('child_process').execSync
-const prettyBytes = require('pretty-bytes')
-const gzipSize = require('gzip-size')
+const execSync = require("child_process").execSync;
 
 const exec = (command, extraEnv) =>
   execSync(command, {
-    stdio: 'inherit',
+    stdio: "inherit",
     env: Object.assign({}, process.env, extraEnv)
-  })
+  });
 
-console.log('Building CommonJS modules ...')
+console.log("Building CommonJS modules ...");
 
-exec('babel modules -d . --ignore __tests__', {
-  BABEL_ENV: 'cjs'
-})
+exec("babel modules -d . --ignore react-router,", {
+  BABEL_ENV: "cjs"
+});
 
-console.log('\nBuilding ES modules ...')
+console.log("\nBuilding ES modules ...");
 
-exec('babel modules -d es --ignore __tests__', {
-  BABEL_ENV: 'es'
-})
-
-console.log('\nBuilding react-router.js ...')
-
-exec('rollup -c -f umd -o umd/react-router.js', {
-  BABEL_ENV: 'umd',
-  NODE_ENV: 'development'
-})
-
-console.log('\nBuilding react-router.min.js ...')
-
-exec('rollup -c -f umd -o umd/react-router.min.js', {
-  BABEL_ENV: 'umd',
-  NODE_ENV: 'production'
-})
-
-const size = gzipSize.sync(
-  fs.readFileSync('umd/react-router.min.js')
-)
-
-console.log('\ngzipped, the UMD build is %s', prettyBytes(size))
+exec("babel modules -d es --ignore react-router", {
+  BABEL_ENV: "es"
+});
