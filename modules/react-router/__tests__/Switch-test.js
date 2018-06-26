@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import MemoryRouter from "../MemoryRouter";
 import Switch from "../Switch";
-import Route from "../Route";
+import Route from "../../LiveRoute";
 import Redirect from "../Redirect";
 
 describe("A <Switch>", () => {

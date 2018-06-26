@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import MemoryRouter from "../MemoryRouter";
 import StaticRouter from "../StaticRouter";
-import Route from "../Route";
+import Route from "../../LiveRoute";
 import withRouter from "../withRouter";
 
 describe("withRouter", () => {

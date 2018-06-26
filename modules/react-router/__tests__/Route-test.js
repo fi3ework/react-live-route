@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import { createMemoryHistory } from "history";
 import MemoryRouter from "../MemoryRouter";
 import Router from "../Router";
-import Route from "../Route";
+import Route from "../../LiveRoute";
 
 describe("A <Route>", () => {
   it("renders at the root", () => {

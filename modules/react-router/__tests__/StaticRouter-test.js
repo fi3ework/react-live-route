@@ -4,7 +4,7 @@ import ReactDOMServer from "react-dom/server";
 import PropTypes from "prop-types";
 import StaticRouter from "../StaticRouter";
 import Redirect from "../Redirect";
-import Route from "../Route";
+import Route from "../../LiveRoute";
 import Prompt from "../Prompt";
 
 describe("A <StaticRouter>", () => {
