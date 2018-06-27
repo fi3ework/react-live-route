@@ -1,11 +1,21 @@
 <p align="center">
-An enhanced version of react-router-v4 Route. It can keep your Route live on unmatch path.
+An enhanced version of react-router-v4 Route that keeps Route component live on unmatched path.
 
 </p>
 
-## ⚠️ 
+## ⚠️
 
-NOT COMPLETED. STILL WORK IN PROGRESS.
+NOT FININSHED. STILL WORK IN PROGRESS.
+
+## Document
+
+[中文](./docs/README-zh.md)
+
+## Install
+
+```bash
+npm install react-live-route --save-dev
+```
 
 ## About
 
