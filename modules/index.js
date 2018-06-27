@@ -1,1 +1,1 @@
-export LiveRoute from './LiveRoute'
+export default from './LiveRoute'
