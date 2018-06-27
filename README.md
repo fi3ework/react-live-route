@@ -1,11 +1,4 @@
-<p align="center">
-An enhanced version of react-router-v4 Route that keeps Route component live on unmatched path.
-
-</p>
-
-## ⚠️
-
-NOT FININSHED. STILL WORK IN PROGRESS.
+An enhanced version of react-router-v4 Route that keeps Route component alive on unmatched path and recover it completely.
 
 ## Document
 
@@ -19,28 +12,52 @@ npm install react-live-route --save-dev
 
 ## About
 
-可以让 Route 在特定路径不匹配的时候隐藏（live）而不 unmount。
+It can keeps component of route hidden (alive) instead of unmout when the path is not match. There are a few APIs provided to control the life cycle of component.
 
-举个例子：
+Example：
 
-一个列表页，点击列表页中的项目会进入详情页，当进入详情页时，列表页会隐藏，当返回列表页时，列表页会恢复到上一次离开时的模样。
+We have a list page, click on the items in the list page will enter the details page, when entering the details page, the list page will be hidden, when returning to the list page, the list page will revert to the last time you left.
 
 ## Features
 
-- 完全兼容 react-router-4
-- 侵入性极小，只需引入一个 LiveRoute
-- 完全恢复上一次离开页面时的模样
-- 超简单的 API
+- ✅ Fully compatible with react-router-4, all passed the react-router-v4 unit tests.
+- 📦 Completely restored the last time you left the page (scroll position included).
+- 🎯 Minimally invasive, all you need to do is importing a LiveRoute.
+- ✌️ Blazing easy API.
 
-## Usage
+## API
 
 ### livePath
 
-LiveRoute 需要隐藏的页面的路由，规则与 react-router 的 path 一样。
+`livePath` is the path of the page that needs to be hidden. The specific rules are the same as `path` props of Route in react-router-v4.
+
+Example:
+
+The route of List will be rendered normally under `/list`, and it will be hidden when entering `/user/:id`, and it will be unmounted normally when entering  other pages.
 
 ```jsx
-<LiveRoute livePath={} ... />
+import LiveRoute from 'react-live-route'
+
+<LiveRoute path="/list" livePath="/user/:id" component={List}/>
 ```
+
+### alwaysLive
+
+`alwaysLive` will block the unmount life cycle under other unmatched pages after the corresponding component of the route completes the first mount.
+
+Example: 
+
+After the first normal rendering, the Modal page is hidden when the path is not matched, and will be re-render when match again.
+
+```jsx
+import LiveRoute from 'react-live-route'
+
+<LiveRoute path="/list" alwaysLive={true} component={Modal}/>
+```
+
+### ⚠️ Notice
+
+- If a route uses LiveRoute and the parent route of the current route is unmounted, then whether or not the LiveRoute is the current matching livePath will be unmounted. This is determined by the top-down design principle of React. You can use LiveRoute to declares a parent route to solve this problem.
 
 ## Licence
 
