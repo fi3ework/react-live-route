@@ -29,7 +29,7 @@ npm install react-live-route --save-dev
 
 ### livePath
 
-`livePath` 为需要隐藏的页面的路径，具体规则与 react-router 中的 Route 的 `path` props 一样。
+`livePath` 为需要隐藏的页面的路径，具体规则与 react-router 中的 Route 的 `path` props 一样，使用 `component`  或 `render` 来渲染路由对应的组件。
 
 例如：
 
@@ -43,7 +43,7 @@ import LiveRoute from 'react-live-route'
 
 ### alwaysLive
 
-`alwaysLive` 会在路由对应的组件完成第一次初始化后，在其他不匹配的页面下阻止页面的卸载。
+`alwaysLive` 会在路由对应的组件完成第一次初始化后，在其他不匹配的页面下阻止页面的卸载。使用 `component`  或 `render` 来渲染路由对应的组件。。
 
 例如：Modal 页面在第一次正常渲染之后，进入路径不匹配的页面时隐藏，而在 Modal 路径匹配时更新渲染。
 

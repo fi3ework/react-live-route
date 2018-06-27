@@ -29,7 +29,7 @@ We have a list page, click on the items in the list page will enter the details 
 
 ### livePath
 
-`livePath` is the path of the page that needs to be hidden. The specific rules are the same as `path` props of Route in react-router-v4.
+`livePath` is the path of the page that needs to be hidden. The specific rules are the same as `path` props of Route in react-router-v4. Use `component` or `render` to
 
 Example:
 

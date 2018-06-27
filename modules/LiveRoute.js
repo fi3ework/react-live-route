@@ -2,7 +2,7 @@ import warning from 'warning'
 import invariant from 'invariant'
 import React from 'react'
 import PropTypes from 'prop-types'
-import matchPath from './react-router/matchPath'
+import matchPath from './matchPath'
 import ReactDOM from 'react-dom'
 
 const isEmptyChildren = children => React.Children.count(children) === 0
@@ -111,20 +111,19 @@ class Route extends React.Component {
     const prevMatch = this.computeMatch(props, this.context.router)
     const livePathMatch = this.computeMatch(nextPropsWithLivePath, nextContext.router)
     if (match || (props.alwaysLive && !this._routeInited)) {
-      console.log('------- NORMAL -------')
+      console.log('------- NORMAL FLAG -------')
       // 正常存活
       this.liveState = NORMAL_RENDER
       this._prevRouter = this.context.router
       return match
     } else if ((livePathMatch && prevMatch) || props.alwaysLive) {
       // 备份一下需要渲染的参数
-      console.log('------- HIDE -------')
+      console.log('------- HIDE FLAG-------')
       this.liveState = HIDE_RENDER
       return prevMatch
     } else {
       this.liveState = NORMAL_RENDER
-      console.log('------- NO MATCH -------')
-      console.error('err')
+      console.log('------- NO MATCH FLAG -------')
     }
   }
 
@@ -174,7 +173,7 @@ class Route extends React.Component {
   }
 
   // 获取 Route 对应的 DOM
-  componentDidUpdate() {
+  componentDidUpdate(prevProps, prevState) {
     if ((this.props.livePath || this.props.alwaysLive) && this.state.match) {
       this.getRouteDom()
       if (this.routeDom) {
@@ -204,6 +203,11 @@ class Route extends React.Component {
     }
   }
 
+  returnCommonRender(component, render, props, match) {
+    if (component) return match ? React.createElement(component, props) : null
+    if (render) return match ? render(props) : null
+  }
+
   render() {
     const { match } = this.state
     const { children, component, render, livePath, alwaysLive } = this.props
@@ -211,12 +215,13 @@ class Route extends React.Component {
     const location = this.props.location || route.location
     const props = { match, location, history, staticContext }
 
-    if ((livePath || alwaysLive) && component) {
-      console.log('=== render: ' + this.liveState + ' ===')
+    if ((livePath || alwaysLive) && (component || render)) {
+      console.log('=== RENDER FLAG: ' + this.liveState + ' ===')
       // 正常渲染
       if (this.liveState === NORMAL_RENDER) {
         this.showRoute()
-        return match ? React.createElement(component, props) : null
+        // return match ? React.createElement(component, props) : null
+        return this.returnCommonRender(component, render, props, match)
       }
       // 隐藏渲染
       else if (this.liveState === HIDE_RENDER) {
@@ -227,10 +232,12 @@ class Route extends React.Component {
         const location = this.props.location || route.location
         const liveProps = { match, location, history, staticContext }
         this.hideRoute()
-        return React.createElement(component, liveProps)
+        // return React.createElement(component, liveProps)
+        return this.returnCommonRender(component, render, liveProps, true)
       } else {
         console.log('react-live-router: this is mount render, will do nothing.')
-        return match ? React.createElement(component, props) : null
+        return this.returnCommonRender(component, render, props, match)
+        // return match ? React.createElement(component, props) : null
       }
     }
 
