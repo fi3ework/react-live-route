@@ -1,7 +1,7 @@
 const BABEL_ENV = process.env.BABEL_ENV
 const building = BABEL_ENV != undefined && BABEL_ENV !== 'cjs'
 
-const plugins = []
+const plugins = ['transform-remove-console']
 
 if (process.env.NODE_ENV === 'production') {
   plugins.push(

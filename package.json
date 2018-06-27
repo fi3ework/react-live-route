@@ -1,6 +1,6 @@
 {
   "name": "react-live-route",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A living route for react-router-v4",
   "repository": "fi3ework/react-live-route",
   "license": "MIT",
@@ -40,6 +40,7 @@
     "babel-plugin-dev-expression": "^0.2.1",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-transform-react-remove-prop-types": "^0.4.13",
+    "babel-plugin-transform-remove-console": "^6.9.4",
     "babel-preset-es2015": "^6.14.0",
     "babel-preset-react": "^6.5.0",
     "babel-preset-stage-1": "^6.5.0",
