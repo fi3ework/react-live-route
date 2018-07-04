@@ -89,6 +89,19 @@ class Route extends React.Component {
     )
   }
 
+  saveOffset = () => {
+    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+    window.sessionStorage.setItem('@@offset', scrollTop)
+    console.log(scrollTop)
+  }
+
+  restoreOffset = () => {
+    const scrollTop = window.sessionStorage.getItem('@@offset')
+    if (typeof scrollTop === 'string') {
+      window.scroll({ top: Number.parseFloat(scrollTop) })
+    }
+  }
+
   /**
    *
    *
@@ -189,6 +202,7 @@ class Route extends React.Component {
       const _previousDisplayStyle = this.routeDom.style.display
       if (_previousDisplayStyle !== 'none') {
         this._previousDisplayStyle = _previousDisplayStyle
+        this.saveOffset()
         console.log('setted = ' + _previousDisplayStyle)
       }
       console.log(_previousDisplayStyle)
@@ -200,10 +214,11 @@ class Route extends React.Component {
   showRoute() {
     if (this.routeDom) {
       this.routeDom.style.display = this._previousDisplayStyle
+      this.restoreOffset()
     }
   }
 
-  returnCommonRender(component, render, props, match) {
+  routeRender(component, render, props, match) {
     if (component) return match ? React.createElement(component, props) : null
     if (render) return match ? render(props) : null
   }
@@ -221,7 +236,7 @@ class Route extends React.Component {
       if (this.liveState === NORMAL_RENDER) {
         this.showRoute()
         // return match ? React.createElement(component, props) : null
-        return this.returnCommonRender(component, render, props, match)
+        return this.routeRender(component, render, props, match)
       }
       // 隐藏渲染
       else if (this.liveState === HIDE_RENDER) {
@@ -232,12 +247,10 @@ class Route extends React.Component {
         const location = this.props.location || route.location
         const liveProps = { match, location, history, staticContext }
         this.hideRoute()
-        // return React.createElement(component, liveProps)
-        return this.returnCommonRender(component, render, liveProps, true)
+        return this.routeRender(component, render, liveProps, true)
       } else {
         console.log('react-live-router: this is mount render, will do nothing.')
-        return this.returnCommonRender(component, render, props, match)
-        // return match ? React.createElement(component, props) : null
+        return this.routeRender(component, render, props, match)
       }
     }
 
