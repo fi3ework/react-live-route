@@ -1,8 +1,20 @@
-An enhanced version of react-router-v4 Route that keeps Route component alive on unmatched path and recover it completely.
+An enhanced version of react-router-v4 **Route** Component that keeps route component alive on unmatched path and recover it completely on match path.
+
+## ⚠️ Caveat
+
+Still work in progress. 
+
+- [ ] Restore screen offset
+- [x] Restore state and props
+- [x] Unmount on other paths
 
 ## Document
 
 [中文](./docs/README-zh.md)
+
+## Demo
+
+[![Edit react-live-route-demo-1](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/yj9j33pw4j?autoresize=1)
 
 ## Install
 
