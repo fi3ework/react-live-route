@@ -67,9 +67,10 @@ import LiveRoute from 'react-live-route'
 <LiveRoute path="/list" alwaysLive={true} component={Modal}/>
 ```
 
-### ⚠️ Notice
+### ⚠️ Caveat
 
 - If a route uses LiveRoute and the parent route of the current route is unmounted, then whether or not the LiveRoute is the current matching livePath will be unmounted. This is determined by the top-down design principle of React. You can use LiveRoute to declares a parent route to solve this problem.
+- LiveRoute should not be wrapped by `Switch` directly, because `Switch` only render the first matched component so that LiveRoute may not be rendered at all.
 
 ## Licence
 

@@ -43,6 +43,7 @@ class Route extends React.Component {
     if (props.alwaysLive) {
       this._routeInited = false
     }
+    this.liveState = NORMAL_RENDER
   }
 
   getChildContext() {
@@ -59,17 +60,6 @@ class Route extends React.Component {
 
   state = {
     match: this.computeMatch(this.props, this.context.router)
-  }
-
-  computeMatch({ computedMatch, location, path, strict, exact, sensitive }, router) {
-    if (computedMatch) return computedMatch // <Switch> already computed the match for us
-
-    invariant(router, 'You should not use <Route> or withRouter() outside a <Router>')
-
-    const { route } = router
-    const pathname = (location || route.location).pathname
-
-    return matchPath(pathname, { path, strict, exact, sensitive }, route.match)
   }
 
   componentWillMount() {
@@ -114,12 +104,12 @@ class Route extends React.Component {
       '<Route> elements should not change from controlled to uncontrolled (or vice versa). You provided a "location" prop initially but omitted it on a subsequent render.'
     )
 
-    const match = this.computeMatch(nextProps, nextContext.router)
+    let match = this.computeMatch(nextProps, nextContext.router)
     let computedMatch = match
 
-    // 如果是 livePath 页面，需要重新计算 match
+    // 如果是 live 路由，需要重新计算 match
     if (this.props.livePath || this.props.alwaysLive) {
-      computedMatch = this.computeLivePath(this.props, nextProps, nextContext, match)
+      computedMatch = this.computeMatchWithLive(this.props, nextProps, nextContext, match)
     }
 
     this.setState({
@@ -144,14 +134,16 @@ class Route extends React.Component {
    * @param {*} props: this.props
    * @param {*} nextProps: nextProps
    * @param {*} nextContext: nextContext
-   * @param {*} match: match
-   * @returns 如果当前的 livePath 匹配，则返回最近一次正常渲染的 match。
-   *          如果当前的 livePath 不匹配，则返回正常计算的 match。
+   * @param {*} match: 当前路径的 match
+   * @returns
+   * 如果当前的 path 匹配，则返回正常的 match。
+   * 如果当前的 livePath 匹配，则返回最近一次正常渲染的 match。
+   * 如果当前的 livePath 不匹配，则返回正常计算的 match。
    * @memberof Route
    * 在每次正常渲染的时候，都备份它当前的 router，备份给下一次的 livePath 渲染。
    * 在每次隐藏渲染的时候，都返回一个 prevMatch，等到渲染的时候，它拿这次的 prevMatch 和之前的 router 去最终渲染。
    */
-  computeLivePath(props, nextProps, nextContext, match) {
+  computeMatchWithLive(props, nextProps, nextContext, match) {
     console.log('进入 livePath')
     console.log(this._routeInited)
     // 计算 livePath 是否匹配
@@ -176,26 +168,35 @@ class Route extends React.Component {
     }
   }
 
+  // Route 中正常计算 match
+  computeMatch({ computedMatch, location, path, strict, exact, sensitive }, router) {
+    // if (computedMatch) return computedMatch // <Switch> already computed the match for us
+
+    invariant(router, 'You should not use <Route> or withRouter() outside a <Router>')
+
+    const { route } = router
+    const pathname = (location || route.location).pathname
+
+    return matchPath(pathname, { path, strict, exact, sensitive }, route.match)
+  }
+
   // 获取 Route 对应的 DOM
   getRouteDom() {
     let routeDom = ReactDOM.findDOMNode(this)
-    console.log(routeDom)
     this.routeDom = routeDom
   }
 
-  // 隐藏 DOM
+  // 隐藏 DOM 并保存 scroll
   hideRoute() {
-    if (this.routeDom) {
-      const _previousDisplayStyle = this.routeDom.style.display
-      if (_previousDisplayStyle !== 'none') {
-        this._previousDisplayStyle = _previousDisplayStyle
-        this.saveScroll()
-      }
+    const previousDisplayStyle = this.routeDom.style.display
+    if (this.routeDom && previousDisplayStyle !== 'none') {
+      this.saveScroll()
+      this._previousDisplayStyle = previousDisplayStyle
       this.routeDom.style.display = 'none'
     }
   }
 
-  // 显示 DOM
+  // 显示 DOM 并恢复 scroll
   showRoute() {
     if (this.routeDom) {
       this.routeDom.style.display = this._previousDisplayStyle
@@ -203,14 +204,14 @@ class Route extends React.Component {
     }
   }
 
-  // 保存离开前的 scrollTop
+  // 保存离开前的 scroll
   saveScroll = () => {
     const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
     const scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft
     window.sessionStorage.setItem('@@offset', JSON.stringify({ top: scrollTop, left: scrollLeft }))
   }
 
-  // 恢复离开前的 scrollTop
+  // 恢复离开前的 scroll
   restoreScroll = () => {
     const scroll = JSON.parse(window.sessionStorage.getItem('@@offset'))
     console.log(scroll)
@@ -234,28 +235,23 @@ class Route extends React.Component {
 
     if ((livePath || alwaysLive) && (component || render)) {
       console.log('=== RENDER FLAG: ' + this.liveState + ' ===')
-      // 正常渲染
       if (this.liveState === NORMAL_RENDER) {
+        // 正常渲染
         this.showRoute()
-        // return match ? React.createElement(component, props) : null
         return this.renderRoute(component, render, props, match)
-      }
-      // 隐藏渲染
-      else if (this.liveState === HIDE_RENDER) {
-        console.log('取出的 _prevRouter')
-        console.log(this._prevRouter)
+      } else if (this.liveState === HIDE_RENDER) {
+        // 隐藏渲染
         const prevRouter = this._prevRouter
+        // 取出 prevRouter 中的属性
         const { history, route, staticContext } = prevRouter
         const location = this.props.location || route.location
         const liveProps = { match, location, history, staticContext }
         this.hideRoute()
         return this.renderRoute(component, render, liveProps, true)
-      } else {
-        console.log('react-live-router: this is mount render, will do nothing.')
-        return this.renderRoute(component, render, props, match)
       }
     }
 
+    // 以下是 Route 的正常渲染
     if (component) return match ? React.createElement(component, props) : null
 
     if (render) return match ? render(props) : null
