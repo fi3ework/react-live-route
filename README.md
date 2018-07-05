@@ -1,13 +1,5 @@
 An enhanced version of react-router-v4 **Route** Component that keeps route component alive on unmatched path and recover it completely on match path.
 
-## ⚠️ Caveat
-
-Still work in progress. 
-
-- [ ] Restore screen offset
-- [x] Restore state and props
-- [x] Unmount on other paths
-
 ## Document
 
 [中文](./docs/README-zh.md)
