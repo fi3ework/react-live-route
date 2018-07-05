@@ -193,10 +193,9 @@ class Route extends React.Component {
 
   // 隐藏 DOM 并保存 scroll
   hideRoute() {
-    const previousDisplayStyle = this.routeDom.style.display
-    if (this.routeDom && previousDisplayStyle !== 'none') {
+    if (this.routeDom && this.routeDom.style.display !== 'none') {
       this.saveScroll()
-      this._previousDisplayStyle = previousDisplayStyle
+      this._previousDisplayStyle = this.routeDom.style.display
       this.routeDom.style.display = 'none'
     }
   }
