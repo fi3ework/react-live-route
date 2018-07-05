@@ -14,7 +14,7 @@ Still work in progress.
 
 ## Demo
 
-[![Edit react-live-route-demo-1](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/yj9j33pw4j?autoresize=1)
+[![Edit react-live-route-demo-1](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/yj9j33pw4j)
 
 ## Install
 
