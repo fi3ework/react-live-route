@@ -89,16 +89,52 @@ class Route extends React.Component {
     )
   }
 
-  saveOffset = () => {
-    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
-    window.sessionStorage.setItem('@@offset', scrollTop)
-    console.log(scrollTop)
+  // 获取 Route 对应的 DOM
+  componentDidMount() {
+    // 需要在这里模仿 cwrp 保存一下 router
+    if ((this.props.livePath || this.props.alwaysLive) && this.state.match) {
+      this._prevRouter = this.context.router
+      this.getRouteDom()
+      if (this.routeDom) {
+        this._routeInited = true
+        console.log('--- inited ---')
+      }
+    }
   }
 
-  restoreOffset = () => {
-    const scrollTop = window.sessionStorage.getItem('@@offset')
-    if (typeof scrollTop === 'string') {
-      window.scroll({ top: Number.parseFloat(scrollTop) })
+  componentWillReceiveProps(nextProps, nextContext) {
+    console.log('into cwrp')
+    warning(
+      !(nextProps.location && !this.props.location),
+      '<Route> elements should not change from uncontrolled to controlled (or vice versa). You initially used no "location" prop and then provided one on a subsequent render.'
+    )
+
+    warning(
+      !(!nextProps.location && this.props.location),
+      '<Route> elements should not change from controlled to uncontrolled (or vice versa). You provided a "location" prop initially but omitted it on a subsequent render.'
+    )
+
+    const match = this.computeMatch(nextProps, nextContext.router)
+    let computedMatch = match
+
+    // 如果是 livePath 页面，需要重新计算 match
+    if (this.props.livePath || this.props.alwaysLive) {
+      computedMatch = this.computeLivePath(this.props, nextProps, nextContext, match)
+    }
+
+    this.setState({
+      match: computedMatch
+    })
+  }
+
+  // 获取 Route 对应的 DOM
+  componentDidUpdate(prevProps, prevState) {
+    if ((this.props.livePath || this.props.alwaysLive) && this.state.match) {
+      this.getRouteDom()
+      if (this.routeDom) {
+        this._routeInited = true
+        console.log('--- inited ---')
+      }
     }
   }
 
@@ -140,60 +176,11 @@ class Route extends React.Component {
     }
   }
 
-  componentWillReceiveProps(nextProps, nextContext) {
-    console.log('into cwrp')
-    warning(
-      !(nextProps.location && !this.props.location),
-      '<Route> elements should not change from uncontrolled to controlled (or vice versa). You initially used no "location" prop and then provided one on a subsequent render.'
-    )
-
-    warning(
-      !(!nextProps.location && this.props.location),
-      '<Route> elements should not change from controlled to uncontrolled (or vice versa). You provided a "location" prop initially but omitted it on a subsequent render.'
-    )
-
-    const match = this.computeMatch(nextProps, nextContext.router)
-    let computedMatch = match
-
-    // 如果是 livePath 页面，需要重新计算 match
-    if (this.props.livePath || this.props.alwaysLive) {
-      computedMatch = this.computeLivePath(this.props, nextProps, nextContext, match)
-    }
-
-    this.setState({
-      match: computedMatch
-    })
-  }
-
   // 获取 Route 对应的 DOM
   getRouteDom() {
     let routeDom = ReactDOM.findDOMNode(this)
     console.log(routeDom)
     this.routeDom = routeDom
-  }
-
-  // 获取 Route 对应的 DOM
-  componentDidMount() {
-    // 需要在这里模仿 cwrp 保存一下 router
-    if ((this.props.livePath || this.props.alwaysLive) && this.state.match) {
-      this._prevRouter = this.context.router
-      this.getRouteDom()
-      if (this.routeDom) {
-        this._routeInited = true
-        console.log('--- inited ---')
-      }
-    }
-  }
-
-  // 获取 Route 对应的 DOM
-  componentDidUpdate(prevProps, prevState) {
-    if ((this.props.livePath || this.props.alwaysLive) && this.state.match) {
-      this.getRouteDom()
-      if (this.routeDom) {
-        this._routeInited = true
-        console.log('--- inited ---')
-      }
-    }
   }
 
   // 隐藏 DOM
@@ -202,10 +189,8 @@ class Route extends React.Component {
       const _previousDisplayStyle = this.routeDom.style.display
       if (_previousDisplayStyle !== 'none') {
         this._previousDisplayStyle = _previousDisplayStyle
-        this.saveOffset()
-        console.log('setted = ' + _previousDisplayStyle)
+        this.saveScroll()
       }
-      console.log(_previousDisplayStyle)
       this.routeDom.style.display = 'none'
     }
   }
@@ -214,11 +199,28 @@ class Route extends React.Component {
   showRoute() {
     if (this.routeDom) {
       this.routeDom.style.display = this._previousDisplayStyle
-      this.restoreOffset()
+      this.restoreScroll()
     }
   }
 
-  routeRender(component, render, props, match) {
+  // 保存离开前的 scrollTop
+  saveScroll = () => {
+    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+    const scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft
+    window.sessionStorage.setItem('@@offset', JSON.stringify({ top: scrollTop, left: scrollLeft }))
+  }
+
+  // 恢复离开前的 scrollTop
+  restoreScroll = () => {
+    const scroll = JSON.parse(window.sessionStorage.getItem('@@offset'))
+    console.log(scroll)
+    if (typeof scroll.top === 'number') {
+      window.scroll({ top: scroll.top, left: scroll.left })
+    }
+  }
+
+  // 正常渲染 component 或 render
+  renderRoute(component, render, props, match) {
     if (component) return match ? React.createElement(component, props) : null
     if (render) return match ? render(props) : null
   }
@@ -236,7 +238,7 @@ class Route extends React.Component {
       if (this.liveState === NORMAL_RENDER) {
         this.showRoute()
         // return match ? React.createElement(component, props) : null
-        return this.routeRender(component, render, props, match)
+        return this.renderRoute(component, render, props, match)
       }
       // 隐藏渲染
       else if (this.liveState === HIDE_RENDER) {
@@ -247,10 +249,10 @@ class Route extends React.Component {
         const location = this.props.location || route.location
         const liveProps = { match, location, history, staticContext }
         this.hideRoute()
-        return this.routeRender(component, render, liveProps, true)
+        return this.renderRoute(component, render, liveProps, true)
       } else {
         console.log('react-live-router: this is mount render, will do nothing.')
-        return this.routeRender(component, render, props, match)
+        return this.renderRoute(component, render, props, match)
       }
     }
 
