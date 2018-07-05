@@ -191,11 +191,27 @@ class Route extends React.Component {
     this.routeDom = routeDom
   }
 
+  // compose LiveRoute uuid
+  composeRouteId() {
+    let id = ''
+    if (id) {
+      return id
+    }
+    if (this.props.alwaysLive) {
+      id = `@@_rlr_ALWAYS_LIVE_${this.props.path}`
+    } else if (this.props.livePath) {
+      id = `@@_rlr_PATH_${this.props.path}_LIVE_PATH_${this.props.livePath}`
+    }
+    return id
+  }
+
   // 隐藏 DOM 并保存 scroll
   hideRoute() {
-    if (this.routeDom && this.routeDom.style.display !== 'none') {
+    const previousDisplayStyle = this.routeDom.style.display
+    if (this.routeDom && previousDisplayStyle !== 'none') {
+      console.log(this.props)
       this.saveScroll()
-      this._previousDisplayStyle = this.routeDom.style.display
+      this._previousDisplayStyle = previousDisplayStyle
       this.routeDom.style.display = 'none'
     }
   }
@@ -212,14 +228,14 @@ class Route extends React.Component {
   saveScroll = () => {
     const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
     const scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft
-    window.sessionStorage.setItem('@@offset', JSON.stringify({ top: scrollTop, left: scrollLeft }))
+    window.sessionStorage.setItem(this.composeRouteId(), JSON.stringify({ top: scrollTop, left: scrollLeft }))
   }
 
   // 恢复离开前的 scroll
   restoreScroll = () => {
-    const scroll = JSON.parse(window.sessionStorage.getItem('@@offset'))
+    const scroll = JSON.parse(window.sessionStorage.getItem(this.composeRouteId()))
     console.log(scroll)
-    if (typeof scroll.top === 'number') {
+    if (scroll && typeof scroll.top === 'number') {
       window.scroll({ top: scroll.top, left: scroll.left })
     }
   }
