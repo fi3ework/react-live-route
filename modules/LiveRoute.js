@@ -157,11 +157,16 @@ class Route extends React.Component {
       this.liveState = NORMAL_RENDER
       this._prevRouter = this.context.router
       return match
-    } else if ((livePathMatch && prevMatch) || props.alwaysLive) {
+    } else if (livePathMatch || props.alwaysLive) {
       // 备份一下需要渲染的参数
       console.log('------- HIDE FLAG-------')
       this.liveState = HIDE_RENDER
-      return prevMatch
+      if (prevMatch) {
+        this._prevMatch = prevMatch
+        return prevMatch
+      } else {
+        return this._prevMatch
+      }
     } else {
       this.liveState = NORMAL_RENDER
       console.log('------- NO MATCH FLAG -------')
