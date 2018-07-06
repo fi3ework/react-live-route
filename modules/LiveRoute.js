@@ -7,6 +7,8 @@ import ReactDOM from 'react-dom'
 
 const isEmptyChildren = children => React.Children.count(children) === 0
 const NORMAL_RENDER = 0
+const NORMAL_RENDER_MATCH = 2
+const NORMAL_RENDER_UNMATCH = 3
 const HIDE_RENDER = 1
 /**
  * The public API for matching a single path and rendering.
@@ -43,7 +45,7 @@ class Route extends React.Component {
     if (props.alwaysLive) {
       this._routeInited = false
     }
-    this.liveState = NORMAL_RENDER
+    this.liveState = NORMAL_RENDER_MATCH
   }
 
   getChildContext() {
@@ -126,6 +128,11 @@ class Route extends React.Component {
         console.log('--- inited ---')
       }
     }
+
+    if (this.liveState === NORMAL_RENDER_MATCH) {
+      // 正常渲染
+      this.showRoute()
+    }
   }
 
   /**
@@ -152,9 +159,9 @@ class Route extends React.Component {
     const prevMatch = this.computeMatch(props, this.context.router)
     const livePathMatch = this.computeMatch(nextPropsWithLivePath, nextContext.router)
     if (match || (props.alwaysLive && !this._routeInited)) {
-      console.log('------- NORMAL FLAG -------')
+      console.log('------- NORMAL MATCH FLAG -------')
       // 正常存活
-      this.liveState = NORMAL_RENDER
+      this.liveState = NORMAL_RENDER_MATCH
       this._prevRouter = this.context.router
       return match
     } else if (livePathMatch || props.alwaysLive) {
@@ -168,8 +175,9 @@ class Route extends React.Component {
         return this._prevMatch
       }
     } else {
-      this.liveState = NORMAL_RENDER
-      console.log('------- NO MATCH FLAG -------')
+      this.liveState = NORMAL_RENDER_UNMATCH
+      console.log('------- NORMAL UNMATCH FLAG -------')
+      window.sessionStorage.removeItem(this.getComposeRouteId())
     }
   }
 
@@ -192,7 +200,7 @@ class Route extends React.Component {
   }
 
   // compose LiveRoute uuid
-  composeRouteId() {
+  getComposeRouteId() {
     let id = ''
     if (id) {
       return id
@@ -207,11 +215,10 @@ class Route extends React.Component {
 
   // 隐藏 DOM 并保存 scroll
   hideRoute() {
-    const previousDisplayStyle = this.routeDom.style.display
-    if (this.routeDom && previousDisplayStyle !== 'none') {
-      console.log(this.props)
+    console.log('--- hide route ---')
+    if (this.routeDom && this.routeDom.style.display !== 'none') {
       this.saveScroll()
-      this._previousDisplayStyle = previousDisplayStyle
+      this._previousDisplayStyle = this.routeDom.style.display
       this.routeDom.style.display = 'none'
     }
   }
@@ -228,12 +235,13 @@ class Route extends React.Component {
   saveScroll = () => {
     const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
     const scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft
-    window.sessionStorage.setItem(this.composeRouteId(), JSON.stringify({ top: scrollTop, left: scrollLeft }))
+    console.log(`saved top = ${scrollTop}, left = ${scrollLeft}`)
+    window.sessionStorage.setItem(this.getComposeRouteId(), JSON.stringify({ top: scrollTop, left: scrollLeft }))
   }
 
   // 恢复离开前的 scroll
   restoreScroll = () => {
-    const scroll = JSON.parse(window.sessionStorage.getItem(this.composeRouteId()))
+    const scroll = JSON.parse(window.sessionStorage.getItem(this.getComposeRouteId()))
     console.log(scroll)
     if (scroll && typeof scroll.top === 'number') {
       window.scroll({ top: scroll.top, left: scroll.left })
@@ -255,9 +263,8 @@ class Route extends React.Component {
 
     if ((livePath || alwaysLive) && (component || render)) {
       console.log('=== RENDER FLAG: ' + this.liveState + ' ===')
-      if (this.liveState === NORMAL_RENDER) {
+      if (this.liveState === NORMAL_RENDER_MATCH || this.liveState === NORMAL_RENDER_UNMATCH) {
         // 正常渲染
-        this.showRoute()
         return this.renderRoute(component, render, props, match)
       } else if (this.liveState === HIDE_RENDER) {
         // 隐藏渲染

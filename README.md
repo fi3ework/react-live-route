@@ -6,7 +6,17 @@ An enhanced version of react-router-v4 **Route** Component that keeps route comp
 
 ## Demo
 
+### codeSandbox
+
+You can experience react-live-route on codeSandbox.
+
 [![Edit react-live-route-demo-1](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/yj9j33pw4j)
+
+### QR code
+
+You also can scan the QR code of the demo above to experience it on mobile device.
+
+![qr](./docs/qr.png)
 
 ## Install
 
