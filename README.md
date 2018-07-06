@@ -41,32 +41,32 @@ We have a list page, click on the items in the list page will enter the details 
 
 ## ⚠️ Caveat
 
-- If a route uses LiveRoute and the parent route of the current route is unmounted, then whether or not the LiveRoute is the current matching livePath will be unmounted. This is determined by the top-down design principle of React. You can use LiveRoute to declares a parent route to solve this problem.
-- LiveRoute should not be wrapped by `Switch` directly, because `Switch` only render the first matched component so that LiveRoute may not be rendered at all.
+- LiveRoute **SHOULD NOT** be wrapped by `Switch` directly, because `Switch` only render the first matched component so that LiveRoute may be directly skipped.
+- If a route uses LiveRoute and the parent route of the current route is unmounted, then it will be unmounted whether or not livePath is match. This is determined by the top-down design principle of React. You can use LiveRoute to declares a parent route to solve this problem or stop nestting the router.
 
 ## API
 
 ### livePath
 
-`livePath` is the path of the page that needs to be hidden. The specific rules are the same as `path` props of Route in react-router-v4. Use `component` or `render` to
+`livePath` is the path of the page that needs to be hidden instead of unmounted. The specific rules of `livePath` are the same as `path` props of Route in react-router-v4. You still can use `component` or `render` props to render a component.
 
 Example:
 
-The route of List will be rendered normally under `/list`, and it will be hidden when entering `/user/:id`, and it will be unmounted normally when entering  other pages.
+The route of List will be rendered normally under `/list`, and it will be hidden when entering `/user/:id`, and it will be unmounted normally when entering  other location.
 
 ```jsx
 import LiveRoute from 'react-live-route'
 
-<LiveRoute path="/list" livePath="/user/:id" component={List}/>
+<LiveRoute path="/list" livePath="/user/:id" component={List} />
 ```
 
 ### alwaysLive
 
-`alwaysLive` will block the unmount life cycle under other unmatched pages after the corresponding component of the route completes the first mount.
+`alwaysLive` is just like `livePath`.  It will be re-render when goes back to match location. But the difference is the component will not be unmount on **any other location** after the first mount. 
 
 Example: 
 
-After the first normal rendering, the Modal page is hidden when the path is not matched, and will be re-render when match again.
+After the first mount on match location, the Modal page will be hidden when the path is not matched, and will be re-render when match again.
 
 ```jsx
 import LiveRoute from 'react-live-route'
