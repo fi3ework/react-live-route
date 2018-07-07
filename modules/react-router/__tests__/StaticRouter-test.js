@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 import StaticRouter from "../StaticRouter";
 import Redirect from "../Redirect";
 import Route from "../../LiveRoute";
+// import Route from "../Route";
 import Prompt from "../Prompt";
 
 describe("A <StaticRouter>", () => {

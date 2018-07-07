@@ -24,7 +24,7 @@ const withRouter = Component => {
 
   C.displayName = `withRouter(${Component.displayName || Component.name})`;
   C.WrappedComponent = Component;
-  C.propTypes = {  
+  C.propTypes = {
     wrappedComponentRef: PropTypes.func
   };
 

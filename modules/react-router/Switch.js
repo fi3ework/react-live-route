@@ -41,17 +41,17 @@ class Switch extends React.Component {
   render() {
     const { route } = this.context.router;
     const { children } = this.props;
-    const location = this.props.location || route.location; // 可以手动指定 location
+    const location = this.props.location || route.location;
 
     let match, child;
     React.Children.forEach(children, element => {
       if (match == null && React.isValidElement(element)) {
         const {
-          path: pathProp, // path 
-          exact, // 路径完全匹配
-          strict, // 是否结尾匹配带/的路径
-          sensitive, // 大小写敏感
-          from // path 的备胎
+          path: pathProp,
+          exact,
+          strict,
+          sensitive,
+          from
         } = element.props;
         const path = pathProp || from;
 
@@ -65,7 +65,7 @@ class Switch extends React.Component {
     });
 
     return match
-      ? React.cloneElement(child, { location, computedMatch: match }) // 重新计算两个参数
+      ? React.cloneElement(child, { location, computedMatch: match })
       : null;
   }
 }
