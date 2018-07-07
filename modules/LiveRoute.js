@@ -7,9 +7,9 @@ import ReactDOM from 'react-dom'
 
 const isEmptyChildren = children => React.Children.count(children) === 0
 const NORMAL_RENDER = 0
-const NORMAL_RENDER_MATCH = 2
-const NORMAL_RENDER_UNMATCH = 3
-const HIDE_RENDER = 1
+const NORMAL_RENDER_MATCH = 1
+const NORMAL_RENDER_UNMATCH = 2
+const HIDE_RENDER = 3
 /**
  * The public API for matching a single path and rendering.
  */
@@ -164,7 +164,7 @@ class Route extends React.Component {
       this.liveState = NORMAL_RENDER_MATCH
       this._prevRouter = this.context.router
       return match
-    } else if (livePathMatch || props.alwaysLive) {
+    } else if ((livePathMatch && prevMatch) || props.alwaysLive) {
       // 备份一下需要渲染的参数
       console.log('------- HIDE FLAG-------')
       this.liveState = HIDE_RENDER
@@ -252,6 +252,8 @@ class Route extends React.Component {
 
   // 正常渲染 component 或 render
   renderRoute(component, render, props, match) {
+    console.log(`>>>` + this.props.name)
+    console.log(match)
     if (component) return match ? React.createElement(component, props) : null
     if (render) return match ? render(props) : null
   }
