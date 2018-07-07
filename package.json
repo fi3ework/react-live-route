@@ -31,7 +31,7 @@
     "loose-envify": "^1.3.1",
     "path-to-regexp": "^1.7.0",
     "prop-types": "^15.6.1",
-    "warning": "^3.0.0"
+    "warning": "^4.0.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -48,7 +48,7 @@
     "eslint-plugin-import": "^2.11.0",
     "eslint-plugin-react": "^7.7.0",
     "gzip-size": "^4.1.0",
-    "jest": "^22.4.3",
+    "jest": "^23.1.0",
     "pretty-bytes": "^4.0.2",
     "raf": "^3.4.0",
     "react": "^16.3.2",
