@@ -201,14 +201,16 @@ class Route extends React.Component {
 
   // compose LiveRoute uuid
   getComposeRouteId() {
+    console.log(this.context)
     let id = ''
     if (id) {
       return id
     }
+    const pathname = this.context.router.history.location.pathname
     if (this.props.alwaysLive) {
-      id = `@@_rlr_ALWAYS_LIVE_${this.props.path}`
+      id = `@RLR-@ALWAYSLIVE=${this.props.path}-@PATHNAME=${pathname}`
     } else if (this.props.livePath) {
-      id = `@@_rlr_PATH_${this.props.path}_LIVE_PATH_${this.props.livePath}`
+      id = `@RLR-@PATH=${this.props.path}-@LIVEPATH=${this.props.livePath}-@PATHNAME=${pathname}`
     }
     return id
   }
