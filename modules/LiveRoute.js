@@ -95,7 +95,6 @@ class Route extends React.Component {
   }
 
   componentWillReceiveProps(nextProps, nextContext) {
-    console.log('into cwrp')
     warning(
       !(nextProps.location && !this.props.location),
       '<Route> elements should not change from uncontrolled to controlled (or vice versa). You initially used no "location" prop and then provided one on a subsequent render.'
@@ -139,7 +138,6 @@ class Route extends React.Component {
   componentWillUnmount() {
     if (this.doesRouteEnableLive()) {
       window.sessionStorage.removeItem(this.routeId)
-      this.routeDom = null
     }
   }
 
@@ -193,6 +191,7 @@ class Route extends React.Component {
       console.log('---- NORMAL UNMATCH FLAG----')
       this.liveState = NORMAL_RENDER_UNMATCH
       this.routeDom = null
+      window.sessionStorage.removeItem(this.routeId)
     }
   }
 
