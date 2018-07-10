@@ -6,9 +6,9 @@ import matchPath from './matchPath'
 import ReactDOM from 'react-dom'
 
 const isEmptyChildren = children => React.Children.count(children) === 0
-const NORMAL_RENDER_MATCH = 'render the component as Route when path is matched'
-const NORMAL_RENDER_UNMATCH = 'unmount the component as Route when path is not matched'
-const HIDE_RENDER = 'hide the component of LiveRoute when livePath is matched and previous location is matched'
+const NORMAL_RENDER_MATCH = 'normal matched render'
+const NORMAL_RENDER_UNMATCH = 'normal unmatched render(unmount)'
+const HIDE_RENDER = 'hide route when matched'
 /**
  * The public API for matching a single path and rendering.
  */
@@ -139,6 +139,7 @@ class Route extends React.Component {
   componentWillUnmount() {
     if (this.doesRouteEnableLive()) {
       window.sessionStorage.removeItem(this.routeId)
+      this.routeDom = null
     }
   }
 
@@ -162,7 +163,7 @@ class Route extends React.Component {
    * 在每次隐藏渲染的时候，都返回一个 prevMatch，等到渲染的时候，它拿这次的 prevMatch 和之前的 router 去最终渲染。
    */
   computeMatchWithLive(props, nextProps, nextContext, match) {
-    console.log('进入 livePath')
+    console.log(`>>>>>> ` + this.props.name + ` <<<<<`)
     console.log(this._routeInited)
     // 计算 livePath 是否匹配
     const livePath = nextProps.livePath
@@ -170,15 +171,17 @@ class Route extends React.Component {
     const prevMatch = this.computeMatch(props, this.context.router)
     const livePathMatch = this.computeMatch(nextPropsWithLivePath, nextContext.router)
     if (match || (props.alwaysLive && !this._routeInited)) {
-      console.log('------- NORMAL MATCH FLAG -------')
-      // 正常存活
+      // 匹配正常渲染
+      console.log('---- NORMAL MATCH FLAG ----')
       this.liveState = NORMAL_RENDER_MATCH
       this._prevRouter = this.context.router
       return match
-    } else if ((livePathMatch && prevMatch) || props.alwaysLive) {
-      // 备份一下需要渲染的参数
-      console.log('------- HIDE FLAG-------')
+    } else if ((livePathMatch || props.alwaysLive) && this.routeDom) {
+      // 隐藏渲染
+      console.log('---- HIDE FLAG----')
       this.liveState = HIDE_RENDER
+      this.saveScroll()
+      this.hideRoute()
       if (prevMatch) {
         this._prevMatch = prevMatch
         return prevMatch
@@ -186,14 +189,15 @@ class Route extends React.Component {
         return this._prevMatch
       }
     } else {
+      // 不匹配正常卸载
+      console.log('---- NORMAL UNMATCH FLAG----')
       this.liveState = NORMAL_RENDER_UNMATCH
-      console.log('------- NORMAL UNMATCH FLAG -------')
-      window.sessionStorage.removeItem(this.routeId)
+      this.routeDom = null
     }
   }
 
-  // Route 中正常计算 match
   computeMatch({ computedMatch, location, path, strict, exact, sensitive }, router) {
+    // react-live-route: ignore match from <Switch>, actually LiveRoute should not be wrapped by <Switch>.
     // if (computedMatch) return computedMatch // <Switch> already computed the match for us
 
     invariant(router, 'You should not use <Route> or withRouter() outside a <Router>')
@@ -263,7 +267,6 @@ class Route extends React.Component {
 
   // 正常渲染 component 或 render
   renderRoute(component, render, props, match) {
-    console.log(`>>>` + this.props.name)
     console.log(match)
     if (component) return match ? React.createElement(component, props) : null
     if (render) return match ? render(props) : null
@@ -284,12 +287,10 @@ class Route extends React.Component {
       } else if (this.liveState === HIDE_RENDER) {
         // 隐藏渲染
         const prevRouter = this._prevRouter
-        // 取出 prevRouter 中的属性
+        // 取出 prevRouter 中的属性 mock 出上次正常渲染的 props
         const { history, route, staticContext } = prevRouter
         const location = this.props.location || route.location
         const liveProps = { match, location, history, staticContext }
-        this.saveScroll()
-        this.hideRoute()
         return this.renderRoute(component, render, liveProps, true)
       }
     }
