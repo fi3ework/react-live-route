@@ -137,7 +137,7 @@ class Route extends React.Component {
 
   componentWillUnmount() {
     if (this.doesRouteEnableLive()) {
-      window.sessionStorage.removeItem(this.routeId)
+      this[this.routeId] = null
     }
   }
 
@@ -191,7 +191,7 @@ class Route extends React.Component {
       console.log('---- NORMAL UNMATCH FLAG----')
       this.liveState = NORMAL_RENDER_UNMATCH
       this.routeDom = null
-      window.sessionStorage.removeItem(this.routeId)
+      this[this.routeId] = null
     }
   }
 
@@ -252,13 +252,14 @@ class Route extends React.Component {
       const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
       const scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft
       console.log(`saved top = ${scrollTop}, left = ${scrollLeft}`)
-      window.sessionStorage.setItem(this.routeId, JSON.stringify({ top: scrollTop, left: scrollLeft }))
+      this[this.routeId] = { top: scrollTop, left: scrollLeft }
     }
   }
 
   // 恢复离开前的 scroll
   restoreScroll = () => {
-    const scroll = JSON.parse(window.sessionStorage.getItem(this.routeId))
+    const scroll = this[this.routeId]
+    console.log(scroll)
     if (scroll && typeof scroll.top === 'number' && this.routeDom) {
       window.scroll({ top: scroll.top, left: scroll.left })
     }
