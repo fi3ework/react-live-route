@@ -49,6 +49,7 @@ There is a item list page, click on the items on this page will enter the item d
 
 - LiveRoute **SHOULD NOT** be wrapped by `Switch` directly, cause `Switch` only render the first matched child element so that LiveRoute may be skipped directly. You can move LiveRoute from `Switch` to the outside.
 - If LiveRoute's parent route is unmounted on current location, then it will also be unmounted . This is determined by the top-down design principle of React. You can use LiveRoute to declares a parent route to solve this problem or stop nestting the router.
+- In some cases the DOM of LiveRoute will be modified directly and the scroll position will not change when navigation. This is not a problem with react-live-route. You can scroll the screen to the top manually and you may get some help from [this article](https://github.com/ReactTraining/react-router/blob/2b94b8f9e115bec6426be06b309b6963f4a96004/packages/react-router-dom/docs/guides/scroll-restoration.md) from react-router. By the way, if the scroll position will be restored by LiveRoute, it will come up after the scroll operation in componet of LiveRoute due to the render order of React.
 
 ## Usage
 

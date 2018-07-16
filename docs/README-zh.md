@@ -49,6 +49,7 @@ yarn add react-live-route --dev.
 
 - LiveRoute **不能**直接嵌套在 `Switch` 组件中，因为 `Switch` 会只渲染第一个路径匹配的子元素所以 LiveRoute 可能会被直接跳过，你可以将 LiveRoute 从 `Switch` 中移出。
 - 如果一个 LiveRoute 的路由在当前路径上被卸载了，那么它也将会被卸载。这是由 React 自顶向下的设计理念决定的，你可以使用 LiveRoute 来声明父路由或者不要嵌套路由。
+- 在一些情况下 LiveRoute 的 DOM 将会被直接修改，所以在切换路由时滚动位置将不会改变。这并不是 react-live-route 带来的问题，你可以手动将页面滚动到顶部，这篇 react-router 提供的[教学文章](./scroll-restoration-zh.md)中可以提供一些帮助。另外，如果 LiveRoute 将要恢复滚动位置，由于 React 的渲染顺序，它将发生在 LiveRoute 渲染的组件的滚动操作之后。
 
 ## 用法
 
