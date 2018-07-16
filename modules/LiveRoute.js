@@ -162,9 +162,12 @@ class Route extends React.Component {
       // 匹配正常渲染
       console.log('---- NORMAL MATCH FLAG ----')
       this.liveState = NORMAL_RENDER_MATCH
-      this._prevRouter = this.context.router
       return match
     } else if ((livePathMatch || props.alwaysLive) && this.routeDom) {
+      // 在从正常渲染到隐藏的时候备份 router
+      if (prevMatch) {
+        this._prevRouter = this.context.router
+      }
       // 隐藏渲染
       console.log('---- HIDE FLAG----')
       this.liveState = HIDE_RENDER
