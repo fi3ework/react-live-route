@@ -233,7 +233,7 @@ class Route extends React.Component {
     const scroll = this.scrollPosBackup
     console.log(scroll)
     if (scroll && this.routeDom) {
-      window.scroll({ top: scroll.top, left: scroll.left })
+      window.scrollTo(scroll.left, scroll.top)
     }
   }
 
