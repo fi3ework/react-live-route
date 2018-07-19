@@ -2,7 +2,7 @@
 
 ## 文档
 
-[English](./docs/README-zh.md)
+[English](../README.md)
 
 ## Demo
 
