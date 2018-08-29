@@ -57,6 +57,8 @@ yarn add react-live-route --dev.
 
 `livePath` 为需要隐藏的页面的路径，具体规则与 react-router 中的 Route 的 `path` props 一样，使用 `component`  或 `render` 来渲染路由对应的组件。
 
+`livePath` 也可以接受一个由上述规则的 string 类型对象组成的数组，如果数组中的任意一个 string 匹配则 `livePath` 匹配。
+
 LiveRoute 会在从 `livePaht` 匹配的路径返回 `path` 匹配的路径时冲渲染，在进入其他不匹配的路径时会直接卸载。
 
 例如：

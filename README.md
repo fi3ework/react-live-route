@@ -53,9 +53,11 @@ There is a item list page, click on the items on this page will enter the item d
 
 ## Usage
 
-### livePath
+### livePath: string or array
 
-`livePath` is the path you want to hide the component instead of unmount it. The specific rules of `livePath` are the same as `path` props of Route in react-router-v4. You still can use `component` or `render` props to render a component. 
+`livePath` is the path you want to hide the component instead of unmount it. The specific rules of `livePath` are the same as `path` props of Route in react-router-v4. You still can use `component` or `render` props to render a component.
+
+`livePath` also can accept an array of string above since 1.2.0. `livePath` is matched if any string in the array is matched.
 
 LiveRoute will re-render when it come back from a `path` matching location from the `livePath` matching location. It will unmount on other unmatched locations.
 
@@ -69,7 +71,7 @@ import LiveRoute from 'react-live-route'
 <LiveRoute path="/list" livePath="/user/:id" component={List} />
 ```
 
-### alwaysLive
+### alwaysLive: bool
 
 `alwaysLive` is just like `livePath`. The difference is the component will not be unmount on **any other location** after the it's first mount. 
 
