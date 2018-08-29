@@ -24,7 +24,7 @@ class Route extends React.Component {
     render: PropTypes.func,
     children: PropTypes.oneOfType([PropTypes.func, PropTypes.node]),
     location: PropTypes.object,
-    livePath: PropTypes.string,
+    livePath: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
     alwaysLive: PropTypes.bool,
     name: PropTypes.string // for LiveRoute debug
   }
@@ -156,9 +156,9 @@ class Route extends React.Component {
     console.log(`>>> ` + this.props.name + ` <<<`)
     // compute if livePath match
     const livePath = nextProps.livePath
-    const nextPropsWithLivePath = { ...nextProps, path: livePath }
+    const nextPropsWithLivePath = { ...nextProps, paths: livePath }
     const prevMatch = this.computeMatch(props, this.context.router)
-    const livePathMatch = this.computeMatch(nextPropsWithLivePath, nextContext.router)
+    const livePathMatch = this.computePathsMatch(nextPropsWithLivePath, nextContext.router)
     if (match) {
       // normal matched render
       console.log('--- NORMAL MATCH FLAG ---')
@@ -184,10 +184,32 @@ class Route extends React.Component {
     }
   }
 
-  computeMatch({ computedMatch, location, path, strict, exact, sensitive }, router) {
-    // react-live-route: ignore match from <Switch>, actually LiveRoute should not be wrapped by <Switch>.
+  computePathsMatch({ computedMatch, location, paths, strict, exact, sensitive }, router) {
+    invariant(router, 'You should not use <Route> or withRouter() outside a <Router>')
+    const { route } = router
+    const pathname = (location || route.location).pathname
 
+    // livePath could accept a string or an array of string
+    if (Array.isArray(paths)) {
+      for (let path of paths) {
+        if (typeof path !== 'string') {
+          continue
+        }
+        const currPath = matchPath(pathname, { path, strict, exact, sensitive }, router.match)
+        // return if one of the livePaths is matched
+        if (currPath) {
+          return currPath
+        }
+      }
+      return null
+    } else {
+      return matchPath(pathname, { path: paths, strict, exact, sensitive }, router.match)
+    }
+  }
+
+  computeMatch({ computedMatch, location, path, strict, exact, sensitive }, router) {
     // DO NOT use the computedMatch from Switch!
+    // react-live-route: ignore match from <Switch>, actually LiveRoute should not be wrapped by <Switch>.
     // if (computedMatch) return computedMatch // <Switch> already computed the match for us
     invariant(router, 'You should not use <Route> or withRouter() outside a <Router>')
 
