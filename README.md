@@ -1,3 +1,7 @@
+**🚧 This project will be rewritten recently using TypeScript. Bug will be fixed and new features will be added.**
+
+---
+
 An enhanced version of **react-router-v4 Route** Component that keeps route component alive on unmatched path and restore it completely on match path.
 
 ## Document
