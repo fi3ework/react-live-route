@@ -7,10 +7,13 @@ import { matchPath } from 'react-router'
 import { isValidElementType } from 'react-is'
 
 const isEmptyChildren = children => React.Children.count(children) === 0
-const NORMAL_RENDER_MATCHED = 'normal matched render'
-const NORMAL_RENDER_UNMATCHED = 'normal unmatched render (unmount)'
-const NORMAL_RENDER_ON_INIT = 'normal render (matched or unmatched)'
-const HIDE_RENDER = 'hide route when livePath matched'
+
+enum LiveState {
+  NORMAL_RENDER_MATCHED = 'normal matched render',
+  NORMAL_RENDER_UNMATCHED = 'normal unmatched render (unmount)',
+  NORMAL_RENDER_ON_INIT = 'normal render (matched or unmatched)',
+  HIDE_RENDER = 'hide route when livePath matched'
+}
 
 type CacheDom = HTMLElement | null
 
@@ -86,7 +89,7 @@ class LiveRoute extends React.Component<IProps, any> {
     match: this.computeMatch(this.props as any, this.context.router)
   }
 
-  liveState = NORMAL_RENDER_ON_INIT
+  liveState: LiveState = LiveState.NORMAL_RENDER_ON_INIT
   scrollPosBackup: { left: number; top: number } | null = null
   previousDisplayStyle: string | null = null
 
@@ -147,7 +150,7 @@ class LiveRoute extends React.Component<IProps, any> {
 
     // restore display when matched normally
     console.log(this.liveState)
-    if (this.liveState === NORMAL_RENDER_MATCHED) {
+    if (this.liveState === LiveState.NORMAL_RENDER_MATCHED) {
       this.showRoute()
       this.restoreScrollPosition()
       this.clearScroll()
@@ -191,7 +194,7 @@ class LiveRoute extends React.Component<IProps, any> {
     if (match) {
       // normal matched render
       console.log('--- NORMAL MATCH FLAG ---')
-      this.liveState = NORMAL_RENDER_MATCHED
+      this.liveState = LiveState.NORMAL_RENDER_MATCHED
       return match
     } else if ((livePathMatch || props.alwaysLive) && this.routeDom) {
       // backup router when from normal match render to hide render
@@ -200,14 +203,14 @@ class LiveRoute extends React.Component<IProps, any> {
       }
       // hide render
       console.log('--- HIDE FLAG ---')
-      this.liveState = HIDE_RENDER
+      this.liveState = LiveState.HIDE_RENDER
       this.saveScrollPosition()
       this.hideRoute()
       return prevMatch
     } else {
       // normal unmatched unmount
       console.log('--- NORMAL UNMATCH FLAG ---')
-      this.liveState = NORMAL_RENDER_UNMATCHED
+      this.liveState = LiveState.NORMAL_RENDER_UNMATCHED
       this.clearScroll()
       this.clearDomData()
     }
@@ -320,13 +323,13 @@ class LiveRoute extends React.Component<IProps, any> {
     if ((livePath || alwaysLive) && (component || render)) {
       console.log('=== RENDER FLAG: ' + this.liveState + ' ===')
       if (
-        this.liveState === NORMAL_RENDER_MATCHED ||
-        this.liveState === NORMAL_RENDER_UNMATCHED ||
-        this.liveState === NORMAL_RENDER_ON_INIT
+        this.liveState === LiveState.NORMAL_RENDER_MATCHED ||
+        this.liveState === LiveState.NORMAL_RENDER_UNMATCHED ||
+        this.liveState === LiveState.NORMAL_RENDER_ON_INIT
       ) {
         // normal render
         return this.renderRoute(component, render, props, match)
-      } else if (this.liveState === HIDE_RENDER) {
+      } else if (this.liveState === LiveState.HIDE_RENDER) {
         // hide render
         const prevRouter = this._latestMatchedRouter
         // load properties from prevRouter and fake props of latest normal render

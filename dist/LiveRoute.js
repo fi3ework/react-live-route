@@ -30,10 +30,13 @@ import ReactDOM from 'react-dom';
 import { matchPath } from 'react-router';
 import { isValidElementType } from 'react-is';
 var isEmptyChildren = function (children) { return React.Children.count(children) === 0; };
-var NORMAL_RENDER_MATCHED = 'normal matched render';
-var NORMAL_RENDER_UNMATCHED = 'normal unmatched render (unmount)';
-var NORMAL_RENDER_ON_INIT = 'normal render (matched or unmatched)';
-var HIDE_RENDER = 'hide route when livePath matched';
+var LiveState;
+(function (LiveState) {
+    LiveState["NORMAL_RENDER_MATCHED"] = "normal matched render";
+    LiveState["NORMAL_RENDER_UNMATCHED"] = "normal unmatched render (unmount)";
+    LiveState["NORMAL_RENDER_ON_INIT"] = "normal render (matched or unmatched)";
+    LiveState["HIDE_RENDER"] = "hide route when livePath matched";
+})(LiveState || (LiveState = {}));
 /**
  * The public API for matching a single path and rendering.
  */
@@ -45,7 +48,7 @@ var LiveRoute = /** @class */ (function (_super) {
         _this.state = {
             match: _this.computeMatch(_this.props, _this.context.router)
         };
-        _this.liveState = NORMAL_RENDER_ON_INIT;
+        _this.liveState = LiveState.NORMAL_RENDER_ON_INIT;
         _this.scrollPosBackup = null;
         _this.previousDisplayStyle = null;
         return _this;
@@ -90,7 +93,7 @@ var LiveRoute = /** @class */ (function (_super) {
         }
         // restore display when matched normally
         console.log(this.liveState);
-        if (this.liveState === NORMAL_RENDER_MATCHED) {
+        if (this.liveState === LiveState.NORMAL_RENDER_MATCHED) {
             this.showRoute();
             this.restoreScrollPosition();
             this.clearScroll();
@@ -130,7 +133,7 @@ var LiveRoute = /** @class */ (function (_super) {
         if (match) {
             // normal matched render
             console.log('--- NORMAL MATCH FLAG ---');
-            this.liveState = NORMAL_RENDER_MATCHED;
+            this.liveState = LiveState.NORMAL_RENDER_MATCHED;
             return match;
         }
         else if ((livePathMatch || props.alwaysLive) && this.routeDom) {
@@ -140,7 +143,7 @@ var LiveRoute = /** @class */ (function (_super) {
             }
             // hide render
             console.log('--- HIDE FLAG ---');
-            this.liveState = HIDE_RENDER;
+            this.liveState = LiveState.HIDE_RENDER;
             this.saveScrollPosition();
             this.hideRoute();
             return prevMatch;
@@ -148,7 +151,7 @@ var LiveRoute = /** @class */ (function (_super) {
         else {
             // normal unmatched unmount
             console.log('--- NORMAL UNMATCH FLAG ---');
-            this.liveState = NORMAL_RENDER_UNMATCHED;
+            this.liveState = LiveState.NORMAL_RENDER_UNMATCHED;
             this.clearScroll();
             this.clearDomData();
         }
@@ -252,13 +255,13 @@ var LiveRoute = /** @class */ (function (_super) {
         var props = { match: match, location: location, history: history, staticContext: staticContext };
         if ((livePath || alwaysLive) && (component || render)) {
             console.log('=== RENDER FLAG: ' + this.liveState + ' ===');
-            if (this.liveState === NORMAL_RENDER_MATCHED ||
-                this.liveState === NORMAL_RENDER_UNMATCHED ||
-                this.liveState === NORMAL_RENDER_ON_INIT) {
+            if (this.liveState === LiveState.NORMAL_RENDER_MATCHED ||
+                this.liveState === LiveState.NORMAL_RENDER_UNMATCHED ||
+                this.liveState === LiveState.NORMAL_RENDER_ON_INIT) {
                 // normal render
                 return this.renderRoute(component, render, props, match);
             }
-            else if (this.liveState === HIDE_RENDER) {
+            else if (this.liveState === LiveState.HIDE_RENDER) {
                 // hide render
                 var prevRouter = this._latestMatchedRouter;
                 // load properties from prevRouter and fake props of latest normal render

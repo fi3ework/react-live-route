@@ -14,7 +14,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "rm -fr dist && tsc",
-    "watch": "tsc -b -w --pretty",
+    "dev": "tsc -b -w --pretty",
     "prepare": "npm run build",
     "lint": "eslint modules",
     "test": "jest"
