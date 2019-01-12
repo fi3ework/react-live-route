@@ -83,6 +83,14 @@ import LiveRoute from 'react-live-route'
 <LiveRoute path="/list" alwaysLive={true} component={Modal}/>
 ```
 
+### onHide: (routeState: {location, livePath, alwaysLive}) => any
+
+这个钩子函数会在 LiveRoute 将要隐藏时在 `componentWillReceiveProps` 周期触发。
+
+### onReappear: (routeState: {location, livePath, alwaysLive}) => any
+
+这个钩子函数会在 LiveRoute 将要从隐藏状态恢复显示时在 `componentWillReceiveProps` 周期触发。
+
 ### forceUnmount (WIP) 🚧
 
 可以传入一个函数，当这个函数返回值为真时，可以强制路由对应的组件卸载，对应的函数签名为

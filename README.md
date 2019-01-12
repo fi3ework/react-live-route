@@ -1,7 +1,3 @@
-**🚧 This project will be rewritten recently using TypeScript. Bug will be fixed and new features will be added.**
-
----
-
 An enhanced version of **react-router-v4 Route** Component that keeps route component alive on unmatched path and restore it completely on match path.
 
 ## Document
@@ -25,13 +21,13 @@ You also can scan the QR code of the demo above to experience it on mobile devic
 ## Install
 
 ```bash
-npm install react-live-route --save-dev
+npm install react-live-route
 ```
 
 or
 
 ```bash
-yarn add react-live-route --dev
+yarn add react-live-route
 ```
 
 ## About
@@ -88,6 +84,19 @@ import LiveRoute from 'react-live-route'
 
 <LiveRoute path="/list" alwaysLive={true} component={Modal}/>
 ```
+
+### onHide: (routeState: {location, livePath, alwaysLive}) => any
+
+This hook will be triggered when LiveRoute will hide in `componentWillReceiveProps` stage (so it happens before re-render). 
+
+### onReappear: (routeState: {location, livePath, alwaysLive}) => any
+
+This hook will be triggered when LiveRoute will reappear from hide in `componentWillReceiveProps` stage (so it happens before re-render). 
+
+## TODO
+
+- [ ] add test case
+- [ ] add forceUnmount prop
 
 ## Licence
 
