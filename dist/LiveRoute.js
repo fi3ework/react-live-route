@@ -1,3 +1,4 @@
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -22,13 +23,14 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-import warning from 'warning';
-import invariant from 'invariant';
-import React from 'react';
-import PropTypes from 'prop-types';
-import ReactDOM from 'react-dom';
-import { matchPath } from 'react-router';
-import { isValidElementType } from 'react-is';
+Object.defineProperty(exports, "__esModule", { value: true });
+var warning = require("warning");
+var invariant = require("invariant");
+var React = require("react");
+var PropTypes = require("prop-types");
+var ReactDOM = require("react-dom");
+var react_router_1 = require("react-router");
+var react_is_1 = require("react-is");
 var isEmptyChildren = function (children) { return React.Children.count(children) === 0; };
 var LiveState;
 (function (LiveState) {
@@ -37,6 +39,9 @@ var LiveState;
     LiveState["NORMAL_RENDER_ON_INIT"] = "normal render (matched or unmatched)";
     LiveState["HIDE_RENDER"] = "hide route when livePath matched";
 })(LiveState || (LiveState = {}));
+var debugLog = function (message) {
+    // console.log(message)
+};
 /**
  * The public API for matching a single path and rendering.
  */
@@ -86,13 +91,13 @@ var LiveRoute = /** @class */ (function (_super) {
             match: computedMatch
         });
     };
-    // 获取 Route 对应的 DOM
+    // get route of DOM
     LiveRoute.prototype.componentDidUpdate = function (prevProps, prevState) {
         if (!this.doesRouteEnableLive()) {
             return;
         }
         // restore display when matched normally
-        console.log(this.liveState);
+        debugLog(this.liveState);
         if (this.liveState === LiveState.NORMAL_RENDER_MATCHED) {
             this.showRoute();
             this.restoreScrollPosition();
@@ -124,37 +129,41 @@ var LiveRoute = /** @class */ (function (_super) {
      * Back up current router every time it is rendered normally, backing up to the next livePath rendering
      */
     LiveRoute.prototype.computeMatchWithLive = function (props, nextProps, nextContext, match) {
-        // console.log(`>>> ` + this.props.name + ` <<<`)
+        debugLog(">>> " + this.props.name + " <<<");
         // compute if livePath match
-        var livePath = nextProps.livePath;
+        var livePath = nextProps.livePath, alwaysLive = nextProps.alwaysLive;
         var nextPropsWithLivePath = __assign({}, nextProps, { paths: livePath });
         var prevMatch = this.computeMatch(props, this.context.router);
         var livePathMatch = this.computePathsMatch(nextPropsWithLivePath, nextContext.router);
+        // normal matched render
         if (match) {
-            // normal matched render
-            console.log('--- NORMAL MATCH FLAG ---');
+            debugLog('--- NORMAL MATCH FLAG ---');
+            if (this.liveState === LiveState.HIDE_RENDER && typeof this.props.onReappear === 'function') {
+                this.props.onReappear({ location: location, livePath: livePath, alwaysLive: alwaysLive });
+            }
             this.liveState = LiveState.NORMAL_RENDER_MATCHED;
             return match;
         }
-        else if ((livePathMatch || props.alwaysLive) && this.routeDom) {
+        // hide render
+        if ((livePathMatch || props.alwaysLive) && this.routeDom) {
             // backup router when from normal match render to hide render
             if (prevMatch) {
                 this._latestMatchedRouter = this.context.router;
             }
-            // hide render
-            console.log('--- HIDE FLAG ---');
+            if (typeof this.props.onHide === 'function') {
+                this.props.onHide({ location: location, livePath: livePath, alwaysLive: alwaysLive });
+            }
+            debugLog('--- HIDE FLAG ---');
             this.liveState = LiveState.HIDE_RENDER;
             this.saveScrollPosition();
             this.hideRoute();
             return prevMatch;
         }
-        else {
-            // normal unmatched unmount
-            console.log('--- NORMAL UNMATCH FLAG ---');
-            this.liveState = LiveState.NORMAL_RENDER_UNMATCHED;
-            this.clearScroll();
-            this.clearDomData();
-        }
+        // normal unmatched unmount
+        debugLog('--- NORMAL UNMATCH FLAG ---');
+        this.liveState = LiveState.NORMAL_RENDER_UNMATCHED;
+        this.clearScroll();
+        this.clearDomData();
     };
     LiveRoute.prototype.computePathsMatch = function (_a, router) {
         var computedMatch = _a.computedMatch, location = _a.location, paths = _a.paths, strict = _a.strict, exact = _a.exact, sensitive = _a.sensitive;
@@ -168,7 +177,7 @@ var LiveRoute = /** @class */ (function (_super) {
                 if (typeof path !== 'string') {
                     continue;
                 }
-                var currPath = matchPath(pathname, { path: path, strict: strict, exact: exact, sensitive: sensitive }, router.match);
+                var currPath = react_router_1.matchPath(pathname, { path: path, strict: strict, exact: exact, sensitive: sensitive }, router.match);
                 // return if one of the livePaths is matched
                 if (currPath) {
                     return currPath;
@@ -177,7 +186,7 @@ var LiveRoute = /** @class */ (function (_super) {
             return null;
         }
         else {
-            return matchPath(pathname, { path: paths, strict: strict, exact: exact, sensitive: sensitive }, router.match);
+            return react_router_1.matchPath(pathname, { path: paths, strict: strict, exact: exact, sensitive: sensitive }, router.match);
         }
     };
     LiveRoute.prototype.computeMatch = function (_a, router) {
@@ -188,7 +197,7 @@ var LiveRoute = /** @class */ (function (_super) {
         invariant(router, 'You should not use <Route> or withRouter() outside a <Router>');
         var route = router.route;
         var pathname = (location || route.location).pathname;
-        return matchPath(pathname, { path: path, strict: strict, exact: exact, sensitive: sensitive }, route.match);
+        return react_router_1.matchPath(pathname, { path: path, strict: strict, exact: exact, sensitive: sensitive }, route.match);
     };
     // get DOM of Route
     LiveRoute.prototype.getRouteDom = function () {
@@ -198,7 +207,7 @@ var LiveRoute = /** @class */ (function (_super) {
     // backup scroll and hide DOM
     LiveRoute.prototype.hideRoute = function () {
         if (this.routeDom && this.routeDom.style.display !== 'none') {
-            console.log('--- hide route ---');
+            debugLog('--- hide route ---');
             this.previousDisplayStyle = this.routeDom.style.display;
             this.routeDom.style.display = 'none';
         }
@@ -214,14 +223,14 @@ var LiveRoute = /** @class */ (function (_super) {
         if (this.routeDom && this.scrollPosBackup === null) {
             var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
             var scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
-            console.log("saved top = " + scrollTop + ", left = " + scrollLeft);
+            debugLog("saved top = " + scrollTop + ", left = " + scrollLeft);
             this.scrollPosBackup = { top: scrollTop, left: scrollLeft };
         }
     };
     // restore the scroll position before hide
     LiveRoute.prototype.restoreScrollPosition = function () {
         var scroll = this.scrollPosBackup;
-        console.log(scroll);
+        debugLog(scroll);
         if (scroll && this.routeDom) {
             window.scrollTo(scroll.left, scroll.top);
         }
@@ -241,7 +250,7 @@ var LiveRoute = /** @class */ (function (_super) {
     };
     // normally render or unmount Route
     LiveRoute.prototype.renderRoute = function (component, render, props, match) {
-        console.log(match);
+        debugLog(match);
         if (component)
             return match ? React.createElement(component, props) : null;
         if (render)
@@ -249,12 +258,13 @@ var LiveRoute = /** @class */ (function (_super) {
     };
     LiveRoute.prototype.render = function () {
         var match = this.state.match;
-        var _a = this.props, children = _a.children, component = _a.component, render = _a.render, livePath = _a.livePath, alwaysLive = _a.alwaysLive;
+        var _a = this.props, children = _a.children, component = _a.component, render = _a.render, livePath = _a.livePath, alwaysLive = _a.alwaysLive, onHide = _a.onHide;
         var _b = this.context.router, history = _b.history, route = _b.route, staticContext = _b.staticContext;
         var location = this.props.location || route.location;
         var props = { match: match, location: location, history: history, staticContext: staticContext };
+        // only affect LiveRoute
         if ((livePath || alwaysLive) && (component || render)) {
-            console.log('=== RENDER FLAG: ' + this.liveState + ' ===');
+            debugLog('=== RENDER FLAG: ' + this.liveState + ' ===');
             if (this.liveState === LiveState.NORMAL_RENDER_MATCHED ||
                 this.liveState === LiveState.NORMAL_RENDER_UNMATCHED ||
                 this.liveState === LiveState.NORMAL_RENDER_ON_INIT) {
@@ -264,10 +274,8 @@ var LiveRoute = /** @class */ (function (_super) {
             else if (this.liveState === LiveState.HIDE_RENDER) {
                 // hide render
                 var prevRouter = this._latestMatchedRouter;
-                // load properties from prevRouter and fake props of latest normal render
-                var history_1 = prevRouter.history, route_1 = prevRouter.route, staticContext_1 = prevRouter.staticContext;
-                var location_1 = this.props.location || route_1.location;
-                var liveProps = { match: match, location: location_1, history: history_1, staticContext: staticContext_1 };
+                var history_1 = prevRouter.history, route_1 = prevRouter.route, staticContext_1 = prevRouter.staticContext; // load properties from prevRouter and fake props of latest normal render
+                var liveProps = { match: match, location: location, history: history_1, staticContext: staticContext_1 };
                 return this.renderRoute(component, render, liveProps, true);
             }
         }
@@ -289,13 +297,14 @@ var LiveRoute = /** @class */ (function (_super) {
         strict: PropTypes.bool,
         sensitive: PropTypes.bool,
         component: function (props, propName) {
-            if (props[propName] && !isValidElementType(props[propName])) {
+            if (props[propName] && !react_is_1.isValidElementType(props[propName])) {
                 return new Error("Invalid prop 'component' supplied to 'Route': the prop is not a valid React component");
             }
         },
         render: PropTypes.func,
         children: PropTypes.oneOfType([PropTypes.func, PropTypes.node]),
         location: PropTypes.object,
+        onHide: PropTypes.func,
         livePath: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
         alwaysLive: PropTypes.bool,
         name: PropTypes.string // for LiveRoute debug
@@ -315,5 +324,5 @@ var LiveRoute = /** @class */ (function (_super) {
     };
     return LiveRoute;
 }(React.Component));
-export { LiveRoute };
+exports.LiveRoute = LiveRoute;
 //# sourceMappingURL=LiveRoute.js.map

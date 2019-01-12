@@ -7,7 +7,7 @@
   "dependencies": {
     "react": "16.4.1",
     "react-dom": "16.4.1",
-    "react-live-route": "1.2.4",
+    "react-live-route": "../",
     "react-router-dom": "4.3.1",
     "react-scripts": "1.1.4"
   },

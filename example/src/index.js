@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Route, BrowserRouter } from 'react-router-dom'
-import LiveRoute from '../../dist/index'
+import LiveRoute from 'react-live-route'
 import List from './list'
 import Detail from './detail'
 import Bar from './bar'
@@ -13,7 +13,20 @@ function App() {
   return (
     <div className="App">
       <Route exact path="/" component={Home} />
-      <LiveRoute path="/items" component={List} livePath="/item/:id" name="items" />
+      <LiveRoute
+        path="/items"
+        component={List}
+        livePath="/item/:id"
+        name="items"
+        onHide={routeState => {
+          console.log('[on hide]')
+          console.log(routeState)
+        }}
+        onReappear={routeState => {
+          console.log('[on reappear]')
+          console.log(routeState)
+        }}
+      />
       <Route path="/item/:id" component={Detail} />
       <LiveRoute path="/about" alwaysLive={true} component={About} name="about" />
       <Bar />

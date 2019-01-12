@@ -5,10 +5,6 @@
   "repository": "fi3ework/react-live-route",
   "license": "MIT",
   "authors": "fi3ework",
-  "files": [
-    "index.js",
-    "LiveRoute.js"
-  ],
   "main": "dist/index.js",
   "module": "es/index.js",
   "sideEffects": false,
@@ -25,9 +21,9 @@
   "dependencies": {
     "invariant": "^2.2.4",
     "prop-types": "^15.6.1",
-    "react-is": "^16.7.0",
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
+    "react-is": "^16.7.0",
     "react-router": "^4.3.1",
     "react-router-dom": "^4.3.1",
     "warning": "^4.0.1"
