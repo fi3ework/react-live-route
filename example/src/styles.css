@@ -1,0 +1,87 @@
+.App {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+a {
+  text-decoration: none;
+  color: #666;
+}
+
+.bar {
+  position: fixed;
+  display: flex;
+  width: 100%;
+  justify-content: space-around;
+  padding: 10px 0;
+  left: 0;
+  bottom: 0;
+  background-color: #aaa;
+  border-top: 2px solid #888;
+}
+
+.bar a {
+  color: #fff;
+}
+
+.item {
+  display: block;
+  color: #666;
+  width: 100px;
+  padding: 5px 0;
+  border-radius: 4px;
+  margin: 5px auto;
+  background-color: #f1f1f1;
+}
+
+.count {
+  color: #333;
+}
+
+.desc {
+  color: #666;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.detailContent {
+  margin: 50px 0;
+}
+
+.pagination {
+  display: inline-block;
+  margin: 0 20px;
+  padding: 0 10px;
+  color: #fff;
+  background-color: #777;
+  border-radius: 4px;
+}
+
+code {
+  background-color: #eee;
+  padding: 2px 4px;
+  border-radius: 2px;
+  color: darkcyan;
+}
+
+.about,
+.list {
+  width: 80%;
+  margin: 0 auto;
+}
+
+.entry {
+  padding: 20px 0;
+  width: 80%;
+  margin: 0 auto;
+  transition: all 0.2s ease-in;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.entry:hover {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+}
+
+.placeholder-text {
+  color: #999;
+}
