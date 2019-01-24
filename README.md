@@ -93,6 +93,25 @@ This hook will be triggered when LiveRoute will hide in `componentWillReceivePro
 
 This hook will be triggered when LiveRoute will reappear from hide in `componentWillReceiveProps` stage (so it happens before re-render). 
 
+```js
+import LiveRoute from 'react-live-route'
+
+<LiveRoute
+  path="/items"
+  component={List}
+  livePath="/item/:id"
+  name="items"
+  onHide={routeState => {
+    console.log('[on hide]')
+    console.log(routeState)
+  }}
+  onReappear={routeState => {
+    console.log('[on reappear]')
+    console.log(routeState)
+  }}
+/>
+```
+
 ## TODO
 
 - [ ] add test case

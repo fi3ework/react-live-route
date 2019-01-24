@@ -48,5 +48,5 @@ if ('scrollRestoration' in window.history) {
 }
 
 document.addEventListener('scrollTo', () => {
-  console.log('233')
+  console.log('document scrolled')
 })
