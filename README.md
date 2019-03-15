@@ -5,11 +5,11 @@
     <p>
     <p align="center">
         <i>
-            <a href="https://www.npmjs.com/package/tinar">
+            <a href="https://www.npmjs.com/package/react-live-route">
               <img src="https://img.shields.io/npm/v/react-live-route.svg?color=%2361AFEF" alt="NPM Version">
             </a>
-            <a href="https://circleci.com/gh/tinarjs/tinar">
-              <img src="https://img.shields.io/circleci/project/github/tinarjs/tinar/master.svg" alt="Build Status">
+            <a href="https://circleci.com/gh/fi3ework/react-live-route">
+              <img src="https://img.shields.io/circleci/project/github/fi3ework/react-live-route/master.svg?style=flat-square" alt="Build Status">
             </a>
 <a href='https://coveralls.io/github/fi3ework/tinar?branch=master'><img src='https://coveralls.io/repos/github/fi3ework/tinar/badge.svg?branch=master&amp;t=CTNsds' alt='Coverage Status' /></a>
         </i>
