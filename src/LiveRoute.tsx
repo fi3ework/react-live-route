@@ -3,7 +3,7 @@ import * as invariant from 'invariant'
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as ReactDOM from 'react-dom'
-import { matchPath } from 'react-router'
+import { matchPath, Route, RouteProps } from 'react-router'
 import { isValidElementType } from 'react-is'
 
 const isEmptyChildren = children => React.Children.count(children) === 0
@@ -17,15 +17,7 @@ enum LiveState {
 
 type CacheDom = HTMLElement | null
 
-interface IProps {
-  computedMatch: any // private, from <Switch>
-  path: string
-  exact?: boolean
-  strict?: boolean
-  sensitive?: boolean
-  component?: PropTypes.ReactComponentLike
-  render?: React.StatelessComponent
-  location: string
+interface IProps extends RouteProps {
   livePath?: string
   alwaysLive: boolean
   onHide?: Function
@@ -332,13 +324,13 @@ class LiveRoute extends React.Component<IProps, any> {
 
   render() {
     const { match } = this.state
-    const { children, component, render, livePath, alwaysLive, onHide } = this.props
+    const { children, component, render: propRender, livePath, alwaysLive, onHide } = this.props
     const { history, route, staticContext } = this.context.router
     const location = this.props.location || route.location
     const props = { match, location, history, staticContext }
 
     // only affect LiveRoute
-    if ((livePath || alwaysLive) && (component || render)) {
+    if ((livePath || alwaysLive) && (component || propRender)) {
       debugLog('=== RENDER FLAG: ' + this.liveState + ' ===')
       if (
         this.liveState === LiveState.NORMAL_RENDER_MATCHED ||
@@ -346,22 +338,22 @@ class LiveRoute extends React.Component<IProps, any> {
         this.liveState === LiveState.NORMAL_RENDER_ON_INIT
       ) {
         // normal render
-        return this.renderRoute(component, render, props, match)
+        return this.renderRoute(component, propRender, props, match)
       } else if (this.liveState === LiveState.HIDE_RENDER) {
         // hide render
         const prevRouter = this._latestMatchedRouter
         const { history, route, staticContext } = prevRouter // load properties from prevRouter and fake props of latest normal render
         const liveProps = { match, location, history, staticContext }
-        return this.renderRoute(component, render, liveProps, true)
+        return this.renderRoute(component, propRender, liveProps, true)
       }
     }
 
     // the following is the same as Route of react-router, just render it normally
     if (component) return match ? React.createElement(component, props) : null
 
-    if (render) return match ? render(props as any) : null
+    if (propRender) return match ? propRender(props as any) : null
 
-    if (typeof children === 'function') return children(props)
+    if (typeof children === 'function') return (children as any)(props)
 
     if (children && !isEmptyChildren(children)) return React.Children.only(children)
 

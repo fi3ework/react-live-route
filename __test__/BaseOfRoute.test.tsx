@@ -1,8 +1,9 @@
+import { createMemoryHistory } from 'history'
+import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import * as PropTypes from 'prop-types'
-import { MemoryRouter, Route, Router } from 'react-router'
-import { createMemoryHistory } from 'history'
+import { MemoryRouter, Router } from 'react-router'
+import Route from '../src/index'
 
 describe('A <Route>', () => {
   it('renders at the root', () => {
