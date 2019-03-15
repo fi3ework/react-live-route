@@ -1,4 +1,5 @@
 es
+dist
 node_modules
 umd
 /*.js

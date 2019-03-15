@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
+    "alwaysStrict": true,
+    "declaration": true,
+    "removeComments": false,
     "strict": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
@@ -17,7 +20,10 @@
     "noImplicitAny": false,
     "strictNullChecks": true,
     "suppressImplicitAnyIndexErrors": true,
-    "noUnusedLocals": false
+    "downlevelIteration": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
-  "include": ["src"]
+  "include": ["src/**/*.tsx"],
+  "exclude": ["node_modules", "dist", "__test__"]
 }
