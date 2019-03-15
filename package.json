@@ -13,7 +13,8 @@
     "dev": "tsc -b -w --pretty",
     "prepare": "npm run build",
     "lint": "tslint src",
-    "test": "jest"
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "peerDependencies": {
     "react": ">=15"
@@ -35,6 +36,7 @@
     "@types/react-router-dom": "^4.3.1",
     "jest": "^24.5.0",
     "jest-environment-jsdom": "^24.5.0",
+    "react-testing-library": "^6.0.0",
     "ts-jest": "^24.0.0",
     "tslint": "^5.14.0",
     "tslint-config-alloy": "^0.2.1",

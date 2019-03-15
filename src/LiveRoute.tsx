@@ -18,15 +18,15 @@ enum LiveState {
 type CacheDom = HTMLElement | null
 
 interface IProps extends RouteProps {
-  livePath?: string
+  livePath?: string | string[]
   alwaysLive: boolean
   onHide?: Function
   onReappear?: Function
   name?: string
 }
 
-const debugLog = (message: any) => {
-  // console.log(message)
+const debugLog = (...messages: string[]) => {
+  // console.log(...messages)
 }
 
 /**
@@ -184,7 +184,7 @@ class LiveRoute extends React.Component<IProps, any> {
    * Back up current router every time it is rendered normally, backing up to the next livePath rendering
    */
   computeMatchWithLive(props, nextProps, nextContext, match) {
-    debugLog(`>>> ` + this.props.name + ` <<<`)
+    debugLog(`>>>  name: ${this.props.name}  <<<`)
     // compute if livePath match
     const { livePath, alwaysLive } = nextProps
     const nextPropsWithLivePath = { ...nextProps, paths: livePath }
