@@ -1,4 +1,20 @@
-An enhanced version of **react-router-v4 Route** Component that keeps route component alive on unmatched path and restore it completely on match path.
+<p align="center">
+    <h1 align="center">Tinar</h1>
+    <p align="center">
+        An enhanced version of **react-router-v4 Route** Component that keeps route component alive on unmatched path and restore it completely on match path.
+    <p>
+    <p align="center">
+        <i>
+            <a href="https://www.npmjs.com/package/tinar">
+              <img src="https://img.shields.io/npm/v/react-live-route.svg?color=%2361AFEF" alt="NPM Version">
+            </a>
+            <a href="https://circleci.com/gh/tinarjs/tinar">
+              <img src="https://img.shields.io/circleci/project/github/tinarjs/tinar/master.svg" alt="Build Status">
+            </a>
+<a href='https://coveralls.io/github/fi3ework/tinar?branch=master'><img src='https://coveralls.io/repos/github/fi3ework/tinar/badge.svg?branch=master&amp;t=CTNsds' alt='Coverage Status' /></a>
+        </i>
+    </p>
+</p>
 
 ## Document
 
@@ -63,40 +79,37 @@ LiveRoute will re-render when it come back from a `path` matching location from 
 
 Example:
 
-The route of List will be rendered normally under `/list`, and it will be hidden when location change to `/user/:id`, and it will be unmounted normally when entering  other locations.
+The route of List will be rendered normally under `/list`, and it will be hidden when location change to `/user/:id`, and it will be unmounted normally when entering other locations.
 
 ```jsx
 import LiveRoute from 'react-live-route'
-
-<LiveRoute path="/list" livePath="/user/:id" component={List} />
+;<LiveRoute path="/list" livePath="/user/:id" component={List} />
 ```
 
 ### alwaysLive: bool
 
-`alwaysLive` is just like `livePath`. The difference is the component will not be unmount on **any other location** after the it's first mount. 
+`alwaysLive` is just like `livePath`. The difference is the component will not be unmount on **any other location** after the it's first mount.
 
-Example: 
+Example:
 
 After the first mount on match location, the Modal page will be hidden when the path is not matched, and will re-render when `path` match again.
 
 ```jsx
 import LiveRoute from 'react-live-route'
-
-<LiveRoute path="/list" alwaysLive={true} component={Modal}/>
+;<LiveRoute path="/list" alwaysLive={true} component={Modal} />
 ```
 
 ### onHide: (routeState: {location, livePath, alwaysLive}) => any
 
-This hook will be triggered when LiveRoute will hide in `componentWillReceiveProps` stage (so it happens before re-render). 
+This hook will be triggered when LiveRoute will hide in `componentWillReceiveProps` stage (so it happens before re-render).
 
 ### onReappear: (routeState: {location, livePath, alwaysLive}) => any
 
-This hook will be triggered when LiveRoute will reappear from hide in `componentWillReceiveProps` stage (so it happens before re-render). 
+This hook will be triggered when LiveRoute will reappear from hide in `componentWillReceiveProps` stage (so it happens before re-render).
 
 ```js
 import LiveRoute from 'react-live-route'
-
-<LiveRoute
+;<LiveRoute
   path="/items"
   component={List}
   livePath="/item/:id"
@@ -114,7 +127,6 @@ import LiveRoute from 'react-live-route'
 
 ## TODO
 
-- [ ] add test case
 - [ ] add forceUnmount prop
 
 ## Licence

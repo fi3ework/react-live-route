@@ -25,8 +25,8 @@ interface IProps extends RouteProps {
   name?: string
 }
 
-const debugLog = (...messages: string[]) => {
-  // console.log(...messages)
+const debugLog = (message: any) => {
+  // console.log(message)
 }
 
 /**
