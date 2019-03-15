@@ -1,7 +1,7 @@
 <p align="center">
-    <h1 align="center">Tinar</h1>
+    <h1 align="center">react-live-route</h1>
     <p align="center">
-        An enhanced version of **react-router-v4 Route** Component that keeps route component alive on unmatched path and restore it completely on match path.
+        An enhanced version of react-router-v4 Route Component that keeps route component alive on unmatched path and restore it completely on match path.
     <p>
     <p align="center">
         <i>

@@ -2,6 +2,5 @@ es
 dist
 node_modules
 umd
-/*.js
 !rollup.config.js
 /coverage
