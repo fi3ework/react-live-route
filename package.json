@@ -33,6 +33,7 @@
     "@types/react": "^16.7.18",
     "@types/react-dom": "^16.0.11",
     "jest": "^24.5.0",
+    "jest-environment-jsdom": "^24.5.0",
     "ts-jest": "^24.0.0",
     "tslint": "^5.14.0",
     "tslint-config-alloy": "^0.2.1",
