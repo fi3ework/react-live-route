@@ -4,6 +4,10 @@
 
 [English](../README.md)
 
+## 反馈
+
+欢迎开 [issue](https://github.com/fi3ework/react-live-route/issues/new) 来获取帮助或讨论。如果需要帮助，请 fork [这个](https://codesandbox.io/s/20pm25081r)最小化的代码来复现有问题的场景，否则你的 issue 可能会因为缺少信息而被直接关闭。
+
 ## Demo
 
 ### codeSandbox
@@ -67,7 +71,6 @@ List 的路由会在 `/list` 下正常渲染，当进入 `/user/:id` 时会隐�
 
 ```jsx
 import LiveRoute from 'react-live-route'
-
 <LiveRoute path="/list" livePath="/user/:id" component={List}/>
 ```
 
@@ -79,7 +82,6 @@ import LiveRoute from 'react-live-route'
 
 ```jsx
 import LiveRoute from 'react-live-route'
-
 <LiveRoute path="/list" alwaysLive={true} component={Modal}/>
 ```
 

@@ -11,7 +11,7 @@
             <a href="https://circleci.com/gh/fi3ework/react-live-route">
               <img src="https://img.shields.io/circleci/project/github/fi3ework/react-live-route/master.svg?style=flat-square" alt="Build Status">
             </a>
-<a href='https://coveralls.io/github/fi3ework/tinar?branch=master'><img src='https://coveralls.io/repos/github/fi3ework/tinar/badge.svg?branch=master&amp;t=CTNsds' alt='Coverage Status' /></a>
+<a href='https://coveralls.io/github/fi3ework/react-live-route'><img src='https://img.shields.io/coveralls/github/fi3ework/react-live-route/master.svg?style=flat-square' alt='Coverage Status' /></a>
         </i>
     </p>
 </p>
@@ -19,6 +19,10 @@
 ## Document
 
 [中文](./docs/README-zh.md)
+
+## Feedback
+
+Feel free to open an [issue](https://github.com/fi3ework/react-live-route/issues/new) to ask for help or have a discussion. If there is a detailed code problem help is needed, please fork [this](https://codesandbox.io/s/20pm25081r) minimal demo to provide a reproduce scenario, or your issue might be closed directly due to lack of information.
 
 ## Demo
 
@@ -81,9 +85,9 @@ Example:
 
 The route of List will be rendered normally under `/list`, and it will be hidden when location change to `/user/:id`, and it will be unmounted normally when entering other locations.
 
-```jsx
+```tsx
 import LiveRoute from 'react-live-route'
-;<LiveRoute path="/list" livePath="/user/:id" component={List} />
+<LiveRoute path="/list" livePath="/user/:id" component={List} />
 ```
 
 ### alwaysLive: bool
@@ -96,7 +100,7 @@ After the first mount on match location, the Modal page will be hidden when the 
 
 ```jsx
 import LiveRoute from 'react-live-route'
-;<LiveRoute path="/list" alwaysLive={true} component={Modal} />
+<LiveRoute path="/list" alwaysLive={true} component={Modal} />
 ```
 
 ### onHide: (routeState: {location, livePath, alwaysLive}) => any
@@ -109,7 +113,7 @@ This hook will be triggered when LiveRoute will reappear from hide in `component
 
 ```js
 import LiveRoute from 'react-live-route'
-;<LiveRoute
+<LiveRoute
   path="/items"
   component={List}
   livePath="/item/:id"
@@ -125,8 +129,9 @@ import LiveRoute from 'react-live-route'
 />
 ```
 
-## TODO
+## Todo
 
+- [ ] support render
 - [ ] add forceUnmount prop
 
 ## Licence
