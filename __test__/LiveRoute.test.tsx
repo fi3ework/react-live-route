@@ -1,3 +1,5 @@
+/* tslint:disable */
+
 import * as React from 'react'
 import LiveRoute from '../src/index'
 import { Route, Link, Switch, Router } from 'react-router-dom'
@@ -19,17 +21,31 @@ const componentGenerator = (name: string) =>
     }
   }
 
+const renderPropsGenerator = (name: string) => () => <h1>{textGenerator(name)}</h1>
+
 function App() {
   return (
     <div>
       <LiveRoute path="/a" livePath="/b" component={componentGenerator('live-on-b')} />
-      <LiveRoute path="/a" livePath={['/b', '/c']} component={componentGenerator(`live-on-bc`)} />
-      <LiveRoute path="/a" alwaysLive={true} component={componentGenerator('always-live')} />
+      <LiveRoute
+        path="/a"
+        livePath={['/b', '/c', '/d']}
+        onHide={(location, match, livePath, alwaysLive) => {
+          // console.log(arguments)
+        }}
+        component={renderPropsGenerator('live-on-bcd')}
+        forceUnmount={(location, match) => {
+          if (location.pathname === '/d') return true
+        }}
+      />
+      <LiveRoute path="/a" alwaysLive={true} component={renderPropsGenerator('always-live')} />
       <Route path="/b" render={() => <h1>{textGenerator('b')}</h1>} />
       <Route path="/c" render={() => <h1>{textGenerator('c')}</h1>} />
+      <Route path="/d" render={() => <h1>{textGenerator('d')}</h1>} />
       <LinkGenerator to="a" />
       <LinkGenerator to="b" />
       <LinkGenerator to="c" />
+      <LinkGenerator to="d" />
     </div>
   )
 }
@@ -60,17 +76,21 @@ test('live route through different urls', () => {
   const leftClick = { button: 0 }
 
   const { container, getByTestId } = renderWithRouter(<App />)
-  routesLives(container, 'not', ['live-on-b', `live-on-bc`, 'always-live', 'b', 'c'])
+  routesLives(container, 'not', ['live-on-b', 'live-on-bcd', 'always-live', 'b', 'c'])
 
   fireEvent.click(getByTestId('toA'), leftClick)
-  routesLives(container, 'yes', ['live-on-b', `live-on-bc`, 'always-live'])
+  routesLives(container, 'yes', ['live-on-b', 'live-on-bcd', 'always-live'])
   routesLives(container, 'not', ['b', 'c'])
 
   fireEvent.click(getByTestId('toB'), leftClick)
-  routesLives(container, 'yes', ['live-on-b', `live-on-bc`, 'always-live', 'b'])
+  routesLives(container, 'yes', ['live-on-b', 'live-on-bcd', 'always-live', 'b'])
   routesLives(container, 'not', ['c'])
 
   fireEvent.click(getByTestId('toC'), leftClick)
-  routesLives(container, 'yes', [`live-on-bc`, 'always-live', 'c'])
+  routesLives(container, 'yes', ['live-on-bcd', 'always-live', 'c'])
   routesLives(container, 'not', ['live-on-b', 'b'])
+
+  fireEvent.click(getByTestId('toD'), leftClick)
+  routesLives(container, 'yes', ['always-live'])
+  routesLives(container, 'not', ['live-on-bcd', 'live-on-b', 'b', 'c'])
 })

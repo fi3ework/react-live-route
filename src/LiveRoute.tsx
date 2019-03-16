@@ -1,12 +1,13 @@
 /* tslint:disable:no-redundant-jsdoc */
 // This project was originally written in JavaScript, since there's some Js doc remained.
 
+import { Location } from 'history'
 import * as invariant from 'invariant'
 import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { isValidElementType } from 'react-is'
-import { matchPath, RouteProps, Router } from 'react-router'
+import { match, matchPath, RouteProps } from 'react-router'
 import * as warning from 'warning'
 
 const isEmptyChildren = children => React.Children.count(children) === 0
@@ -19,13 +20,20 @@ enum LiveState {
 }
 
 type CacheDom = HTMLElement | null
+type OnRoutingHook = (
+  location: Location,
+  match: match | null,
+  livePath: string | string[] | undefined,
+  alwaysLive: boolean
+) => any
 
 interface IProps extends RouteProps {
   livePath?: string | string[]
   alwaysLive: boolean
-  onHide?: Function
-  onReappear?: Function
+  onHide?: OnRoutingHook
+  onReappear?: OnRoutingHook
   name?: string
+  forceUnmount?: OnRoutingHook
 }
 
 const debugLog = (message: any) => {
@@ -191,12 +199,13 @@ class LiveRoute extends React.Component<IProps, any> {
     const nextPropsWithLivePath = { ...nextProps, paths: livePath }
     const prevMatch = this.computeMatch(props, this.context.router)
     const livePathMatch = this.computePathsMatch(nextPropsWithLivePath, nextContext.router)
-
+    const _location = this.context.router.history.location
     // normal matched render
     if (match) {
       debugLog('--- NORMAL MATCH FLAG ---')
+      // onReappear hook
       if (this.liveState === LiveState.HIDE_RENDER && typeof this.props.onReappear === 'function') {
-        this.props.onReappear({ location, livePath, alwaysLive })
+        this.props.onReappear(_location, match, livePath, alwaysLive)
       }
       this.liveState = LiveState.NORMAL_RENDER_MATCHED
       return match
@@ -208,10 +217,11 @@ class LiveRoute extends React.Component<IProps, any> {
       if (prevMatch) {
         this._latestMatchedRouter = this.context.router
       }
-      if (typeof this.props.onHide === 'function') {
-        this.props.onHide({ location, livePath, alwaysLive })
-      }
       debugLog('--- HIDE FLAG ---')
+      // onHide hook
+      if (this.liveState === LiveState.NORMAL_RENDER_MATCHED && typeof this.props.onHide === 'function') {
+        this.props.onHide(_location, match, livePath, alwaysLive)
+      }
       this.liveState = LiveState.HIDE_RENDER
       this.saveScrollPosition()
       this.hideRoute()
@@ -325,10 +335,17 @@ class LiveRoute extends React.Component<IProps, any> {
 
   public render() {
     const { match } = this.state
-    const { children, component, render: propRender, livePath, alwaysLive, onHide } = this.props
+    const { children, component, render: propRender, livePath, alwaysLive, forceUnmount } = this.props
     const { history, route, staticContext } = this.context.router
     const location = this.props.location || route.location
     const props = { match, location, history, staticContext }
+
+    // force unmount
+    if (typeof forceUnmount === 'function' && forceUnmount(location, match, livePath, alwaysLive)) {
+      this.clearScroll()
+      this.clearDomData()
+      return null
+    }
 
     // only affect LiveRoute
     if ((livePath || alwaysLive) && (component || propRender)) {

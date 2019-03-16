@@ -73,7 +73,7 @@ There is a item list page, click on the items on this page will enter the item d
 
 ## Usage
 
-### livePath: string or array
+### livePath: (string | string[])
 
 `livePath` is the path you want to hide the component instead of unmount it. The specific rules of `livePath` are the same as `path` props of Route in react-router-v4. You still can use `component` or `render` props to render a component.
 
@@ -90,7 +90,7 @@ import LiveRoute from 'react-live-route'
 <LiveRoute path="/list" livePath="/user/:id" component={List} />
 ```
 
-### alwaysLive: bool
+### alwaysLive: boolean
 
 `alwaysLive` is just like `livePath`. The difference is the component will not be unmount on **any other location** after the it's first mount.
 
@@ -103,11 +103,13 @@ import LiveRoute from 'react-live-route'
 <LiveRoute path="/list" alwaysLive={true} component={Modal} />
 ```
 
-### onHide: (routeState: {location, livePath, alwaysLive}) => any
+### onHide: (location, match, livePath, alwaysLive) => any
 
 This hook will be triggered when LiveRoute will hide in `componentWillReceiveProps` stage (so it happens before re-render).
 
-### onReappear: (routeState: {location, livePath, alwaysLive}) => any
+Example of usage is below.
+
+### onReappear: (location, match, livePath, alwaysLive) => any
 
 This hook will be triggered when LiveRoute will reappear from hide in `componentWillReceiveProps` stage (so it happens before re-render).
 
@@ -118,21 +120,27 @@ import LiveRoute from 'react-live-route'
   component={List}
   livePath="/item/:id"
   name="items"
-  onHide={routeState => {
+  onHide={(location, match, livePath, alwaysLive) => {
     console.log('[on hide]')
-    console.log(routeState)
   }}
-  onReappear={routeState => {
+  onReappear={(location, match, livePath, alwaysLive) => {
     console.log('[on reappear]')
     console.log(routeState)
   }}
 />
 ```
 
-## Todo
+### forceUnmount: (location, match, livePath, alwaysLive) => boolean
 
-- [ ] support render
-- [ ] add forceUnmount prop
+forceUnmount is funtion that return a boolean value to decide weather to forceUnmount the LiveRoute no matter it is matched or should be kept lived. 
+
+For example: when the user id equals to `27`, List page will be force unmounted while routing on other value  of id will be kept.
+
+```jsx
+import LiveRoute from 'react-live-route'
+
+<LiveRoute path="/list" livePath="/user/:id" component={List} forceUnmount={(location, match)=> match.params.id === 27}/>
+```
 
 ## Licence
 

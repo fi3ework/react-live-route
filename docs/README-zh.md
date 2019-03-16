@@ -1,4 +1,10 @@
-**react-router-v4 Route** 组件的加强版，可以保持路由的组件在路径不匹配时隐藏而不卸载，而在回到返回到匹配路径时完全恢复离开页面时的样子。
+## ⚠️
+
+中文文档并不保证同步到最新，以[英文版](../README.md)为准，中文版仅为方便阅读提供一点便利。
+
+---
+
+react-router-v4 Route** 组件的加强版，可以保持路由的组件在路径不匹配时隐藏而不卸载，而在回到返回到匹配路径时完全恢复离开页面时的样子。
 
 ## 文档
 
@@ -93,12 +99,12 @@ import LiveRoute from 'react-live-route'
 
 这个钩子函数会在 LiveRoute 将要从隐藏状态恢复显示时在 `componentWillReceiveProps` 周期触发。
 
-### forceUnmount (WIP) 🚧
+### forceUnmount
 
 可以传入一个函数，当这个函数返回值为真时，可以强制路由对应的组件卸载，对应的函数签名为
 
 ```js
-(props, params) => boolean
+(location, match) => boolean
 ```
 
 例如：当 user 的 id 为 27 时，List 页对应的组件要卸载掉，而在其他的页面正常渲染。
