@@ -1,10 +1,13 @@
-import * as warning from 'warning'
+/* tslint:disable:no-redundant-jsdoc */
+// This project was originally written in JavaScript, since there's some Js doc remained.
+
 import * as invariant from 'invariant'
-import * as React from 'react'
 import * as PropTypes from 'prop-types'
+import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import { matchPath, Route, RouteProps } from 'react-router'
 import { isValidElementType } from 'react-is'
+import { matchPath, RouteProps, Router } from 'react-router'
+import * as warning from 'warning'
 
 const isEmptyChildren = children => React.Children.count(children) === 0
 
@@ -33,7 +36,7 @@ const debugLog = (message: any) => {
  * The public API for matching a single path and rendering.
  */
 class LiveRoute extends React.Component<IProps, any> {
-  static propTypes = {
+  public static propTypes = {
     computedMatch: PropTypes.object, // private, from <Switch>
     path: PropTypes.string,
     exact: PropTypes.bool,
@@ -53,11 +56,11 @@ class LiveRoute extends React.Component<IProps, any> {
     name: PropTypes.string // for LiveRoute debug
   }
 
-  static defaultProps = {
+  public static defaultProps = {
     alwaysLive: false
   }
 
-  static contextTypes = {
+  public static contextTypes = {
     router: PropTypes.shape({
       history: PropTypes.object.isRequired,
       route: PropTypes.object.isRequired,
@@ -65,14 +68,20 @@ class LiveRoute extends React.Component<IProps, any> {
     })
   }
 
-  static childContextTypes = {
+  public static childContextTypes = {
     router: PropTypes.object.isRequired
   }
 
-  _latestMatchedRouter: any
-  routeDom: CacheDom = null
+  public _latestMatchedRouter: any
+  public routeDom: CacheDom = null
+  public liveState: LiveState = LiveState.NORMAL_RENDER_ON_INIT
+  public scrollPosBackup: { left: number; top: number } | null = null
+  public previousDisplayStyle: string | null = null
+  public state = {
+    match: this.computeMatch(this.props as any, this.context.router)
+  }
 
-  getChildContext() {
+  public getChildContext() {
     return {
       router: {
         ...this.context.router,
@@ -84,15 +93,7 @@ class LiveRoute extends React.Component<IProps, any> {
     }
   }
 
-  state = {
-    match: this.computeMatch(this.props as any, this.context.router)
-  }
-
-  liveState: LiveState = LiveState.NORMAL_RENDER_ON_INIT
-  scrollPosBackup: { left: number; top: number } | null = null
-  previousDisplayStyle: string | null = null
-
-  componentWillMount() {
+  public componentWillMount() {
     warning(
       !(this.props.component && this.props.render),
       'You should not use <Route component> and <Route render> in the same route; <Route render> will be ignored'
@@ -109,7 +110,7 @@ class LiveRoute extends React.Component<IProps, any> {
     )
   }
 
-  componentDidMount() {
+  public componentDidMount() {
     // backup router and get DOM when mounting
     if (this.doesRouteEnableLive() && this.state.match) {
       this._latestMatchedRouter = this.context.router
@@ -117,7 +118,7 @@ class LiveRoute extends React.Component<IProps, any> {
     }
   }
 
-  componentWillReceiveProps(nextProps, nextContext) {
+  public componentWillReceiveProps(nextProps, nextContext) {
     warning(
       !(nextProps.location && !this.props.location),
       '<Route> elements should not change from uncontrolled to controlled (or vice versa). You initially used no "location" prop and then provided one on a subsequent render.'
@@ -142,7 +143,7 @@ class LiveRoute extends React.Component<IProps, any> {
   }
 
   // get route of DOM
-  componentDidUpdate(prevProps, prevState) {
+  public componentDidUpdate(prevProps, prevState) {
     if (!this.doesRouteEnableLive()) {
       return
     }
@@ -162,11 +163,11 @@ class LiveRoute extends React.Component<IProps, any> {
   }
 
   // clear on unmounting
-  componentWillUnmount() {
+  public componentWillUnmount() {
     this.clearScroll()
   }
 
-  doesRouteEnableLive() {
+  public doesRouteEnableLive() {
     return this.props.livePath || this.props.alwaysLive
   }
 
@@ -183,7 +184,7 @@ class LiveRoute extends React.Component<IProps, any> {
    * @memberof Route
    * Back up current router every time it is rendered normally, backing up to the next livePath rendering
    */
-  computeMatchWithLive(props, nextProps, nextContext, match) {
+  public computeMatchWithLive(props, nextProps, nextContext, match) {
     debugLog(`>>>  name: ${this.props.name}  <<<`)
     // compute if livePath match
     const { livePath, alwaysLive } = nextProps
@@ -224,7 +225,7 @@ class LiveRoute extends React.Component<IProps, any> {
     this.clearDomData()
   }
 
-  computePathsMatch({ computedMatch, location, paths, strict, exact, sensitive }, router) {
+  public computePathsMatch({ computedMatch, location, paths, strict, exact, sensitive }, router) {
     invariant(router, 'You should not use <Route> or withRouter() outside a <Router>')
     const { route } = router
     const pathname = (location || route.location).pathname
@@ -247,7 +248,7 @@ class LiveRoute extends React.Component<IProps, any> {
     }
   }
 
-  computeMatch({ computedMatch, location, path, strict, exact, sensitive }, router) {
+  public computeMatch({ computedMatch, location, path, strict, exact, sensitive }, router) {
     // DO NOT use the computedMatch from Switch!
     // react-live-route: ignore match from <Switch>, actually LiveRoute should not be wrapped by <Switch>.
     // if (computedMatch) return computedMatch // <Switch> already computed the match for us
@@ -260,13 +261,13 @@ class LiveRoute extends React.Component<IProps, any> {
   }
 
   // get DOM of Route
-  getRouteDom() {
+  public getRouteDom() {
     let routeDom = ReactDOM.findDOMNode(this)
     this.routeDom = routeDom as CacheDom
   }
 
   // backup scroll and hide DOM
-  hideRoute() {
+  public hideRoute() {
     if (this.routeDom && this.routeDom.style.display !== 'none') {
       debugLog('--- hide route ---')
       this.previousDisplayStyle = this.routeDom.style.display
@@ -275,14 +276,14 @@ class LiveRoute extends React.Component<IProps, any> {
   }
 
   // reveal DOM display
-  showRoute() {
+  public showRoute() {
     if (this.routeDom && this.previousDisplayStyle !== null) {
       this.routeDom.style.display = this.previousDisplayStyle
     }
   }
 
   // save scroll position before hide DOM
-  saveScrollPosition() {
+  public saveScrollPosition() {
     if (this.routeDom && this.scrollPosBackup === null) {
       const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
       const scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft
@@ -292,7 +293,7 @@ class LiveRoute extends React.Component<IProps, any> {
   }
 
   // restore the scroll position before hide
-  restoreScrollPosition() {
+  public restoreScrollPosition() {
     const scroll = this.scrollPosBackup
     debugLog(scroll)
     if (scroll && this.routeDom) {
@@ -301,7 +302,7 @@ class LiveRoute extends React.Component<IProps, any> {
   }
 
   // clear scroll position
-  clearDomData() {
+  public clearDomData() {
     if (this.doesRouteEnableLive()) {
       this.routeDom = null
       this.previousDisplayStyle = null
@@ -309,20 +310,20 @@ class LiveRoute extends React.Component<IProps, any> {
   }
 
   // clear scroll position
-  clearScroll() {
+  public clearScroll() {
     if (this.doesRouteEnableLive()) {
       this.scrollPosBackup = null
     }
   }
 
   // normally render or unmount Route
-  renderRoute(component, render, props, match) {
+  public renderRoute(component, render, props, match) {
     debugLog(match)
     if (component) return match ? React.createElement(component, props) : null
     if (render) return match ? render(props) : null
   }
 
-  render() {
+  public render() {
     const { match } = this.state
     const { children, component, render: propRender, livePath, alwaysLive, onHide } = this.props
     const { history, route, staticContext } = this.context.router
