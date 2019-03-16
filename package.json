@@ -17,20 +17,21 @@
     "test:watch": "jest --watch"
   },
   "peerDependencies": {
-    "react": ">=15"
+    "react": ">=15",
+    "react-router-dom": ">=4 < 4.4"
   },
   "dependencies": {
     "history": "^4.9.0",
     "invariant": "^2.2.4",
     "prop-types": "^15.6.1",
-    "react": "^16.3.2",
-    "react-dom": "^16.3.2",
     "react-is": "^16.7.0",
-    "react-router": "^4.3.1",
-    "react-router-dom": "^4.3.1",
     "warning": "^4.0.1"
   },
   "devDependencies": {
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2",
+    "react-router": "^4.3.1",
+    "react-router-dom": "^4.3.1",
     "@types/jest": "^24.0.9",
     "@types/react": "^16.7.18",
     "@types/react-dom": "^16.0.11",
