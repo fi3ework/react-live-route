@@ -67,7 +67,9 @@ There is a item list page, click on the items on this page will enter the item d
 
 ## Must read ⚠️
 
-react-live-route is not compatible with `react-router-dom` 4.0+ due to the **`this.context.router`** become it's private API(see [here](https://github.com/ReactTraining/react-router/releases/tag/v4.4.0-beta.0)). This could not be resolved by current design of `react-live-route` unfortunately. By the way, I really do not like `this.context.router` became a private API afterwards ☹️.
+react-live-route is not compatible with `react-router-dom` 4.4.0+ due to the **`this.context.router`** become it's private API(see [here](https://github.com/ReactTraining/react-router/releases/tag/v4.4.0-beta.0)). This could not be resolved by current design of `react-live-route` unfortunately. You still can use it but you need to change the version of `react-router` below 4.4.0.
+
+This project might be re-write to compatible with `react-router` 4.4.0+, to be continued 🥳.
 
 ## Caveat ⚠️
 
