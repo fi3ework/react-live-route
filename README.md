@@ -65,6 +65,10 @@ There is a item list page, click on the items on this page will enter the item d
 - 🔒 Minimally invasive, all you need to do is import LiveRoute.
 - ✌️ Super easy API.
 
+## Must read ⚠️
+
+react-live-route is not compatible with `react-router-dom` 4.0+ due to the **`this.context.router`** become it's private API(see [here](https://github.com/ReactTraining/react-router/releases/tag/v4.4.0-beta.0)). This could not be resolved by current design of `react-live-route` unfortunately. By the way, I really do not like `this.context.router` became a private API afterwards ☹️.
+
 ## Caveat ⚠️
 
 - LiveRoute **SHOULD NOT** be wrapped by `Switch` directly, cause `Switch` only render the first matched child element so that LiveRoute may be skipped directly. You can move LiveRoute from `Switch` to the outside.
