@@ -1,4 +1,4 @@
-import { History } from 'history'
+import { History, Location } from 'history'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { isValidElementType } from 'react-is'
@@ -165,6 +165,9 @@ class LiveRoute extends React.Component<IProps, any> {
       sensitive = false,
       strict = false,
       history,
+      onReappear,
+      onHide,
+      forceUnmount,
       location,
       match: matchFromProps,
       path,
@@ -177,23 +180,41 @@ class LiveRoute extends React.Component<IProps, any> {
     let { children } = this.props
 
     const matchOfPath = matchPath((location as any).pathname, this.props)
-    const matchOfLivePath =
-      this.isLivePathMatch(livePath, location!.pathname, {
-        path,
-        exact,
-        strict,
-        sensitive
-      }) || alwaysLive
+    const matchOfLivePath = this.isLivePathMatch(livePath, location!.pathname, {
+      path,
+      exact,
+      strict,
+      sensitive
+    })
     const matchAnyway = matchOfPath || matchOfLivePath
+
+    // normal render
     if (matchOfPath) {
       this.showRoute()
       this.restoreScrollPosition()
       this.clearScroll()
+
+      // hide -> show
+      if (this.liveState === LiveState.HIDE_RENDER) {
+        if (typeof onReappear === 'function') {
+          onReappear(location!, matchAnyway, livePath, alwaysLive)
+        }
+      }
+      this.liveState = LiveState.NORMAL_RENDER_MATCHED
     }
 
+    // hide render
     if (!matchOfPath && matchAnyway) {
       this.saveScrollPosition()
       this.hideRoute()
+
+      // show -> hide
+      if (this.liveState === LiveState.NORMAL_RENDER_MATCHED) {
+        if (typeof onHide === 'function') {
+          onHide(location!, matchAnyway, livePath, alwaysLive)
+        }
+      }
+      this.liveState = LiveState.HIDE_RENDER
     }
 
     const props = { ...staticContext, location, match: matchAnyway }
