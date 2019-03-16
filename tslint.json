@@ -1,3 +1,6 @@
 {
-  "extends": ["tslint-config-alloy", "tslint-config-prettier"]
+  "extends": ["tslint-config-alloy", "tslint-config-prettier"],
+  "rules": {
+    "no-non-null-assertion": false
+  }
 }

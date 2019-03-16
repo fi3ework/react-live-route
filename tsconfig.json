@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": { "*": ["types/*"] },
     "alwaysStrict": true,
     "declaration": true,
     "removeComments": false,

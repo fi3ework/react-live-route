@@ -1,3 +1,3 @@
-import { LiveRoute } from './LiveRoute'
+import LiveRoute from './LiveRoute'
 
 export default LiveRoute

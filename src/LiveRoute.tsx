@@ -1,17 +1,29 @@
-/* tslint:disable:no-redundant-jsdoc */
-// This project was originally written in JavaScript, since there's some Js doc remained.
-
-import { Location } from 'history'
-import * as invariant from 'invariant'
-import * as PropTypes from 'prop-types'
+import { History } from 'history'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { isValidElementType } from 'react-is'
 import { match, matchPath, RouteProps } from 'react-router'
-import * as warning from 'warning'
+import invariant from 'tiny-invariant'
+import warning from 'tiny-warning'
 
-const isEmptyChildren = children => React.Children.count(children) === 0
+declare var __DEV__: boolean
 
+function debugLog(message: any) {
+  // console.log(message)
+}
+
+function isEmptyChildren(children) {
+  return React.Children.count(children) === 0
+}
+
+type CacheDom = HTMLElement | null
+type LivePath = string | string[] | undefined
+interface IMatchOptions {
+  path?: string | string[]
+  exact?: boolean
+  strict?: boolean
+  sensitive?: boolean
+}
 enum LiveState {
   NORMAL_RENDER_MATCHED = 'normal matched render',
   NORMAL_RENDER_UNMATCHED = 'normal unmatched render (unmount)',
@@ -19,255 +31,54 @@ enum LiveState {
   HIDE_RENDER = 'hide route when livePath matched'
 }
 
-type CacheDom = HTMLElement | null
-type OnRoutingHook = (
-  location: Location,
-  match: match | null,
-  livePath: string | string[] | undefined,
-  alwaysLive: boolean
-) => any
+type OnRoutingHook = (location: Location, match: match | null, livePath: LivePath, alwaysLive: boolean) => any
 
 interface IProps extends RouteProps {
+  name?: string
   livePath?: string | string[]
   alwaysLive: boolean
   onHide?: OnRoutingHook
   onReappear?: OnRoutingHook
-  name?: string
   forceUnmount?: OnRoutingHook
-}
-
-const debugLog = (message: any) => {
-  // console.log(message)
+  history: History
+  match: match
+  staticContext: any
 }
 
 /**
  * The public API for matching a single path and rendering.
  */
 class LiveRoute extends React.Component<IProps, any> {
-  public static propTypes = {
-    computedMatch: PropTypes.object, // private, from <Switch>
-    path: PropTypes.string,
-    exact: PropTypes.bool,
-    strict: PropTypes.bool,
-    sensitive: PropTypes.bool,
-    component: (props, propName): any => {
-      if (props[propName] && !isValidElementType(props[propName])) {
-        return new Error(`Invalid prop 'component' supplied to 'Route': the prop is not a valid React component`)
-      }
-    },
-    render: PropTypes.func,
-    children: PropTypes.oneOfType([PropTypes.func, PropTypes.node]),
-    location: PropTypes.object,
-    onHide: PropTypes.func,
-    livePath: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
-    alwaysLive: PropTypes.bool,
-    name: PropTypes.string // for LiveRoute debug
-  }
-
-  public static defaultProps = {
-    alwaysLive: false
-  }
-
-  public static contextTypes = {
-    router: PropTypes.shape({
-      history: PropTypes.object.isRequired,
-      route: PropTypes.object.isRequired,
-      staticContext: PropTypes.object
-    })
-  }
-
-  public static childContextTypes = {
-    router: PropTypes.object.isRequired
-  }
-
-  public _latestMatchedRouter: any
   public routeDom: CacheDom = null
-  public liveState: LiveState = LiveState.NORMAL_RENDER_ON_INIT
   public scrollPosBackup: { left: number; top: number } | null = null
   public previousDisplayStyle: string | null = null
-  public state = {
-    match: this.computeMatch(this.props as any, this.context.router)
-  }
-
-  public getChildContext() {
-    return {
-      router: {
-        ...this.context.router,
-        route: {
-          location: this.props.location || this.context.router.route.location,
-          match: this.state.match
-        }
-      }
-    }
-  }
-
-  public componentWillMount() {
-    warning(
-      !(this.props.component && this.props.render),
-      'You should not use <Route component> and <Route render> in the same route; <Route render> will be ignored'
-    )
-
-    warning(
-      !(this.props.component && this.props.children && !isEmptyChildren(this.props.children)),
-      'You should not use <Route component> and <Route children> in the same route; <Route children> will be ignored'
-    )
-
-    warning(
-      !(this.props.render && this.props.children && !isEmptyChildren(this.props.children)),
-      'You should not use <Route render> and <Route children> in the same route; <Route children> will be ignored'
-    )
-  }
+  public liveState: LiveState = LiveState.NORMAL_RENDER_ON_INIT
 
   public componentDidMount() {
-    // backup router and get DOM when mounting
-    if (this.doesRouteEnableLive() && this.state.match) {
-      this._latestMatchedRouter = this.context.router
-      this.getRouteDom()
-    }
-  }
-
-  public componentWillReceiveProps(nextProps, nextContext) {
-    warning(
-      !(nextProps.location && !this.props.location),
-      '<Route> elements should not change from uncontrolled to controlled (or vice versa). You initially used no "location" prop and then provided one on a subsequent render.'
-    )
-
-    warning(
-      !(!nextProps.location && this.props.location),
-      '<Route> elements should not change from controlled to uncontrolled (or vice versa). You provided a "location" prop initially but omitted it on a subsequent render.'
-    )
-
-    let match = this.computeMatch(nextProps, nextContext.router)
-    let computedMatch = match
-
-    // recompute match if enable live
-    if (this.doesRouteEnableLive()) {
-      computedMatch = this.computeMatchWithLive(this.props, nextProps, nextContext, match)
-    }
-
-    this.setState({
-      match: computedMatch
-    })
+    this.getRouteDom()
   }
 
   // get route of DOM
   public componentDidUpdate(prevProps, prevState) {
-    if (!this.doesRouteEnableLive()) {
-      return
-    }
+    // if (!this.doesRouteEnableLive()) {
+    //   return
+    // }
 
-    // restore display when matched normally
-    debugLog(this.liveState)
-    if (this.liveState === LiveState.NORMAL_RENDER_MATCHED) {
-      this.showRoute()
-      this.restoreScrollPosition()
-      this.clearScroll()
-    }
+    // // restore display when matched normally
+    // debugLog(this.liveState)
+    // if (this.liveState === LiveState.NORMAL_RENDER_MATCHED) {
+    //   this.showRoute()
+    //   this.restoreScrollPosition()
+    //   this.clearScroll()
+    // }
 
     // get DOM if match and render
-    if (this.state.match) {
-      this.getRouteDom()
-    }
+    this.getRouteDom()
   }
 
   // clear on unmounting
   public componentWillUnmount() {
     this.clearScroll()
-  }
-
-  public doesRouteEnableLive() {
-    return this.props.livePath || this.props.alwaysLive
-  }
-
-  /**
-   * @param {*} props: this.props
-   * @param {*} nextProps: nextProps
-   * @param {*} nextContext: nextContext
-   * @param {*} match: computed `match` of current path
-   * @returns
-   * the returned object will be computed by following orders:
-   * If path matched (no matter livePath matched or not), return normal computed `match`
-   * If livePath matched, return latest normal render `match`
-   * If livePath unmatched, return normal computed `match`
-   * @memberof Route
-   * Back up current router every time it is rendered normally, backing up to the next livePath rendering
-   */
-  public computeMatchWithLive(props, nextProps, nextContext, match) {
-    debugLog(`>>>  name: ${this.props.name}  <<<`)
-    // compute if livePath match
-    const { livePath, alwaysLive } = nextProps
-    const nextPropsWithLivePath = { ...nextProps, paths: livePath }
-    const prevMatch = this.computeMatch(props, this.context.router)
-    const livePathMatch = this.computePathsMatch(nextPropsWithLivePath, nextContext.router)
-    const _location = this.context.router.history.location
-    // normal matched render
-    if (match) {
-      debugLog('--- NORMAL MATCH FLAG ---')
-      // onReappear hook
-      if (this.liveState === LiveState.HIDE_RENDER && typeof this.props.onReappear === 'function') {
-        this.props.onReappear(_location, match, livePath, alwaysLive)
-      }
-      this.liveState = LiveState.NORMAL_RENDER_MATCHED
-      return match
-    }
-
-    // hide render
-    if ((livePathMatch || props.alwaysLive) && this.routeDom) {
-      // backup router when from normal match render to hide render
-      if (prevMatch) {
-        this._latestMatchedRouter = this.context.router
-      }
-      debugLog('--- HIDE FLAG ---')
-      // onHide hook
-      if (this.liveState === LiveState.NORMAL_RENDER_MATCHED && typeof this.props.onHide === 'function') {
-        this.props.onHide(_location, match, livePath, alwaysLive)
-      }
-      this.liveState = LiveState.HIDE_RENDER
-      this.saveScrollPosition()
-      this.hideRoute()
-      return prevMatch
-    }
-
-    // normal unmatched unmount
-    debugLog('--- NORMAL UNMATCH FLAG ---')
-    this.liveState = LiveState.NORMAL_RENDER_UNMATCHED
-    this.clearScroll()
-    this.clearDomData()
-  }
-
-  public computePathsMatch({ computedMatch, location, paths, strict, exact, sensitive }, router) {
-    invariant(router, 'You should not use <Route> or withRouter() outside a <Router>')
-    const { route } = router
-    const pathname = (location || route.location).pathname
-
-    // livePath could accept a string or an array of string
-    if (Array.isArray(paths)) {
-      for (let path of paths) {
-        if (typeof path !== 'string') {
-          continue
-        }
-        const currPath = matchPath(pathname, { path, strict, exact, sensitive }, router.match)
-        // return if one of the livePaths is matched
-        if (currPath) {
-          return currPath
-        }
-      }
-      return null
-    } else {
-      return matchPath(pathname, { path: paths, strict, exact, sensitive }, router.match)
-    }
-  }
-
-  public computeMatch({ computedMatch, location, path, strict, exact, sensitive }, router) {
-    // DO NOT use the computedMatch from Switch!
-    // react-live-route: ignore match from <Switch>, actually LiveRoute should not be wrapped by <Switch>.
-    // if (computedMatch) return computedMatch // <Switch> already computed the match for us
-    invariant(router, 'You should not use <Route> or withRouter() outside a <Router>')
-
-    const { route } = router
-    const pathname = (location || route.location).pathname
-
-    return matchPath(pathname, { path, strict, exact, sensitive }, route.match)
   }
 
   // get DOM of Route
@@ -276,8 +87,8 @@ class LiveRoute extends React.Component<IProps, any> {
     this.routeDom = routeDom as CacheDom
   }
 
-  // backup scroll and hide DOM
   public hideRoute() {
+    console.log(this.routeDom)
     if (this.routeDom && this.routeDom.style.display !== 'none') {
       debugLog('--- hide route ---')
       this.previousDisplayStyle = this.routeDom.style.display
@@ -290,6 +101,10 @@ class LiveRoute extends React.Component<IProps, any> {
     if (this.routeDom && this.previousDisplayStyle !== null) {
       this.routeDom.style.display = this.previousDisplayStyle
     }
+  }
+
+  public doesRouteEnableLive() {
+    return this.props.livePath || this.props.alwaysLive
   }
 
   // save scroll position before hide DOM
@@ -326,57 +141,133 @@ class LiveRoute extends React.Component<IProps, any> {
     }
   }
 
-  // normally render or unmount Route
-  public renderRoute(component, render, props, match) {
-    debugLog(match)
-    if (component) return match ? React.createElement(component, props) : null
-    if (render) return match ? render(props) : null
+  public isLivePathMatch(livePath: LivePath, pathname: string, options: IMatchOptions) {
+    for (let currPath of Array.isArray(livePath) ? livePath : [livePath]) {
+      if (typeof currPath !== 'string') {
+        continue
+      }
+
+      const currLiveOptions = { ...options, path: currPath }
+      const currMatch = matchPath(pathname, currLiveOptions)
+      // return if one of the livePaths is matched
+      if (currMatch) {
+        return currMatch
+      }
+    }
+    // not matched default fallback
+    return null
   }
 
   public render() {
-    const { match } = this.state
-    const { children, component, render: propRender, livePath, alwaysLive, forceUnmount } = this.props
-    const { history, route, staticContext } = this.context.router
-    const location = this.props.location || route.location
-    const props = { match, location, history, staticContext }
+    console.log(this.props)
+    const {
+      exact = false,
+      sensitive = false,
+      strict = false,
+      history,
+      location,
+      match: matchFromProps,
+      path,
+      livePath,
+      alwaysLive,
+      component,
+      render,
+      staticContext
+    } = this.props
+    let { children } = this.props
 
-    // force unmount
-    if (typeof forceUnmount === 'function' && forceUnmount(location, match, livePath, alwaysLive)) {
+    const matchOfPath = matchPath((location as any).pathname, this.props)
+    const matchOfLivePath =
+      this.isLivePathMatch(livePath, location!.pathname, {
+        path,
+        exact,
+        strict,
+        sensitive
+      }) || alwaysLive
+    const matchAnyway = matchOfPath || matchOfLivePath
+    if (matchOfPath) {
+      this.showRoute()
+      this.restoreScrollPosition()
       this.clearScroll()
-      this.clearDomData()
-      return null
     }
 
-    // only affect LiveRoute
-    if ((livePath || alwaysLive) && (component || propRender)) {
-      debugLog('=== RENDER FLAG: ' + this.liveState + ' ===')
-      if (
-        this.liveState === LiveState.NORMAL_RENDER_MATCHED ||
-        this.liveState === LiveState.NORMAL_RENDER_UNMATCHED ||
-        this.liveState === LiveState.NORMAL_RENDER_ON_INIT
-      ) {
-        // normal render
-        return this.renderRoute(component, propRender, props, match)
-      } else if (this.liveState === LiveState.HIDE_RENDER) {
-        // hide render
-        const prevRouter = this._latestMatchedRouter
-        const { history, route, staticContext } = prevRouter // load properties from prevRouter and fake props of latest normal render
-        const liveProps = { match, location, history, staticContext }
-        return this.renderRoute(component, propRender, liveProps, true)
+    if (!matchOfPath && matchAnyway) {
+      this.saveScrollPosition()
+      this.hideRoute()
+    }
+
+    const props = { ...staticContext, location, match: matchAnyway }
+
+    // Preact uses an empty array as children by
+    // default, so use null if that's the case.
+    if (Array.isArray(children) && children.length === 0) {
+      children = null
+    }
+
+    if (typeof children === 'function') {
+      children = (children as any)(props)
+
+      if (children === undefined) {
+        // if (__DEV__) {
+        //   const { path } = this.props
+
+        //   warning(
+        //     false,
+        //     'You returned `undefined` from the `children` function of ' +
+        //       `<Route${path ? ` path="${path}"` : ''}>, but you ` +
+        //       'should have returned a React element or `null`'
+        //   )
+        // }
+
+        children = null
       }
     }
 
-    // the following is the same as Route of react-router, just render it normally
-    if (component) return match ? React.createElement(component, props) : null
+    //
 
-    if (propRender) return match ? propRender(props as any) : null
-
-    if (typeof children === 'function') return (children as any)(props)
-
-    if (children && !isEmptyChildren(children)) return React.Children.only(children)
-
-    return null
+    // normal render from Route
+    return children && !isEmptyChildren(children)
+      ? children
+      : props.match
+      ? component
+        ? React.createElement(component, props)
+        : render
+        ? render(props)
+        : null
+      : null
   }
 }
 
-export { LiveRoute }
+/* tslint:disable:no-invalid-this */
+// if (__DEV__) {
+//   LiveRoute.prototype.componentDidMount = function() {
+//     warning(
+//       !(this.props.children && !isEmptyChildren(this.props.children) && this.props.component),
+//       'You should not use <Route component> and <Route children> in the same route; <Route component> will be ignored'
+//     )
+
+//     warning(
+//       !(this.props.children && !isEmptyChildren(this.props.children) && this.props.render),
+//       'You should not use <Route render> and <Route children> in the same route; <Route render> will be ignored'
+//     )
+
+//     warning(
+//       !(this.props.component && this.props.render),
+//       'You should not use <Route component> and <Route render> in the same route; <Route render> will be ignored'
+//     )
+//   }
+
+//   LiveRoute.prototype.componentDidUpdate = function(prevProps) {
+//     warning(
+//       !(this.props.location && !prevProps.location),
+//       '<Route> elements should not change from uncontrolled to controlled (or vice versa). You initially used no "location" prop and then provided one on a subsequent render.'
+//     )
+
+//     warning(
+//       !(!this.props.location && prevProps.location),
+//       '<Route> elements should not change from controlled to uncontrolled (or vice versa). You provided a "location" prop initially but omitted it on a subsequent render.'
+//     )
+//   }
+// }
+
+export default LiveRoute
