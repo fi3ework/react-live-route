@@ -6,6 +6,7 @@ module.exports = {
     '^.+\\.tsx?$': 'ts-jest'
   },
   globals: {
+    __DEV__: true,
     'ts-jest': {
       diagnostics: false
     }

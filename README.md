@@ -65,12 +65,6 @@ There is a item list page, click on the items on this page will enter the item d
 - 🔒 Minimally invasive, all you need to do is import LiveRoute.
 - ✌️ Super easy API.
 
-## Must read ⚠️
-
-react-live-route is not compatible with `react-router-dom` 4.4.0+ due to the **`this.context.router`** become it's private API(see [here](https://github.com/ReactTraining/react-router/releases/tag/v4.4.0-beta.0)). This could not be resolved by current design of `react-live-route` unfortunately. You still can use it but you need to change the version of `react-router` below 4.4.0.
-
-This project might be re-write to compatible with `react-router` 4.4.0+, to be continued 🥳.
-
 ## Caveat ⚠️
 
 - LiveRoute **SHOULD NOT** be wrapped by `Switch` directly, cause `Switch` only render the first matched child element so that LiveRoute may be skipped directly. You can move LiveRoute from `Switch` to the outside.
@@ -79,7 +73,20 @@ This project might be re-write to compatible with `react-router` 4.4.0+, to be c
 
 ## Usage
 
-### livePath: (string | string[])
+### enhance the Route
+
+The class imported from `react-live-route` **must** be wrapped by `withRouter` to touch the property of context to work as expected.
+
+```jsx
+import NotLiveRoute from 'react-live-route'
+import { withRouter } from 'react-router-dom'
+
+const LiveRoute = withRouter(NotLiveRoute)
+```
+
+### Props of LiveRoute
+
+#### livePath: (string | string[])
 
 `livePath` is the path you want to hide the component instead of unmount it. The specific rules of `livePath` are the same as `path` props of Route in react-router-v4. You still can use `component` or `render` props to render a component.
 
@@ -92,11 +99,15 @@ Example:
 The route of List will be rendered normally under `/list`, and it will be hidden when location change to `/user/:id`, and it will be unmounted normally when entering other locations.
 
 ```tsx
-import LiveRoute from 'react-live-route'
+import NotLiveRoute from 'react-live-route'
+import { withRouter } from 'react-router-dom'
+
+const LiveRoute = withRouter(NotLiveRoute)
+
 <LiveRoute path="/list" livePath="/user/:id" component={List} />
 ```
 
-### alwaysLive: boolean
+#### alwaysLive: boolean
 
 `alwaysLive` is just like `livePath`. The difference is the component will not be unmount on **any other location** after the it's first mount.
 
@@ -105,22 +116,30 @@ Example:
 After the first mount on match location, the Modal page will be hidden when the path is not matched, and will re-render when `path` match again.
 
 ```jsx
-import LiveRoute from 'react-live-route'
+import NotLiveRoute from 'react-live-route'
+import { withRouter } from 'react-router-dom'
+
+const LiveRoute = withRouter(NotLiveRoute)
+
 <LiveRoute path="/list" alwaysLive={true} component={Modal} />
 ```
 
-### onHide: (location, match, livePath, alwaysLive) => any
+#### onHide: (location, match, history, livePath, alwaysLive) => any
 
 This hook will be triggered when LiveRoute will hide in `componentWillReceiveProps` stage (so it happens before re-render).
 
 Example of usage is below.
 
-### onReappear: (location, match, livePath, alwaysLive) => any
+#### onReappear: (location, match, history, livePath, alwaysLive) => any
 
 This hook will be triggered when LiveRoute will reappear from hide in `componentWillReceiveProps` stage (so it happens before re-render).
 
 ```js
-import LiveRoute from 'react-live-route'
+import NotLiveRoute from 'react-live-route'
+import { withRouter } from 'react-router-dom'
+
+const LiveRoute = withRouter(NotLiveRoute)
+
 <LiveRoute
   path="/items"
   component={List}
@@ -136,14 +155,17 @@ import LiveRoute from 'react-live-route'
 />
 ```
 
-### forceUnmount: (location, match, livePath, alwaysLive) => boolean
+#### forceUnmount: (location, match, history, livePath, alwaysLive) => boolean
 
 forceUnmount is funtion that return a boolean value to decide weather to forceUnmount the LiveRoute no matter it is matched or should be kept lived. 
 
 For example: when the user id equals to `27`, List page will be force unmounted while routing on other value  of id will be kept.
 
 ```jsx
-import LiveRoute from 'react-live-route'
+import NotLiveRoute from 'react-live-route'
+import { withRouter } from 'react-router-dom'
+
+const LiveRoute = withRouter(NotLiveRoute)
 
 <LiveRoute path="/list" livePath="/user/:id" component={List} forceUnmount={(location, match)=> match.params.id === 27}/>
 ```

@@ -1,10 +1,12 @@
+/* tslint:disable:cyclomatic-complexity */
+
 import { History, Location } from 'history'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { isValidElementType } from 'react-is'
-import { match, matchPath, RouteProps } from 'react-router'
-import invariant from 'tiny-invariant'
-import warning from 'tiny-warning'
+import { match, matchPath, RouteComponentProps, RouteProps } from 'react-router'
+import * as invariant from 'tiny-invariant'
+import * as warning from 'tiny-warning'
 
 declare var __DEV__: boolean
 
@@ -31,24 +33,32 @@ enum LiveState {
   HIDE_RENDER = 'hide route when livePath matched'
 }
 
-type OnRoutingHook = (location: Location, match: match | null, livePath: LivePath, alwaysLive: boolean) => any
+type OnRoutingHook = (
+  location: Location,
+  match: match | null,
+  history: History,
+  livePath: LivePath,
+  alwaysLive: boolean | undefined
+) => any
 
 interface IProps extends RouteProps {
   name?: string
   livePath?: string | string[]
-  alwaysLive: boolean
+  alwaysLive?: boolean
   onHide?: OnRoutingHook
   onReappear?: OnRoutingHook
   forceUnmount?: OnRoutingHook
-  history: History
-  match: match
-  staticContext: any
+  computedMatch?: IMatchOptions
+  // history: History
+  // match: match
+  // staticContext: any
 }
 
 /**
  * The public API for matching a single path and rendering.
  */
-class LiveRoute extends React.Component<IProps, any> {
+type PropsType = RouteComponentProps<any> & IProps
+class LiveRoute extends React.Component<PropsType, any> {
   public routeDom: CacheDom = null
   public scrollPosBackup: { left: number; top: number } | null = null
   public previousDisplayStyle: string | null = null
@@ -88,7 +98,6 @@ class LiveRoute extends React.Component<IProps, any> {
   }
 
   public hideRoute() {
-    console.log(this.routeDom)
     if (this.routeDom && this.routeDom.style.display !== 'none') {
       debugLog('--- hide route ---')
       this.previousDisplayStyle = this.routeDom.style.display
@@ -141,8 +150,17 @@ class LiveRoute extends React.Component<IProps, any> {
     }
   }
 
-  public isLivePathMatch(livePath: LivePath, pathname: string, options: IMatchOptions) {
-    for (let currPath of Array.isArray(livePath) ? livePath : [livePath]) {
+  public isLivePathMatch(
+    livePath: LivePath,
+    alwaysLive: boolean | undefined,
+    pathname: string,
+    options: IMatchOptions
+  ) {
+    const pathArr = Array.isArray(livePath) ? livePath : [livePath]
+    if (alwaysLive) {
+      pathArr.push('*')
+    }
+    for (let currPath of pathArr) {
       if (typeof currPath !== 'string') {
         continue
       }
@@ -159,28 +177,31 @@ class LiveRoute extends React.Component<IProps, any> {
   }
 
   public render() {
-    console.log(this.props)
     const {
       exact = false,
       sensitive = false,
       strict = false,
-      history,
       onReappear,
       onHide,
       forceUnmount,
-      location,
-      match: matchFromProps,
       path,
       livePath,
       alwaysLive,
       component,
       render,
+      // from withRouter, same as RouterContext.Consumer ⬇️
+      history,
+      location,
+      match,
       staticContext
+      // from withRouter, same as RouterContext.Consumer ⬆️
     } = this.props
     let { children } = this.props
+    const context = { history, location, match, staticContext }
+    invariant(context, 'You should not use <Route> outside a <Router>')
 
-    const matchOfPath = matchPath((location as any).pathname, this.props)
-    const matchOfLivePath = this.isLivePathMatch(livePath, location!.pathname, {
+    const matchOfPath = this.props.path ? matchPath(location.pathname, this.props) : context.match
+    const matchOfLivePath = this.isLivePathMatch(livePath, alwaysLive, location!.pathname, {
       path,
       exact,
       strict,
@@ -194,30 +215,52 @@ class LiveRoute extends React.Component<IProps, any> {
       this.restoreScrollPosition()
       this.clearScroll()
 
-      // hide -> show
+      // hide --> show
       if (this.liveState === LiveState.HIDE_RENDER) {
         if (typeof onReappear === 'function') {
-          onReappear(location!, matchAnyway, livePath, alwaysLive)
+          onReappear(location!, matchAnyway, history, livePath, alwaysLive)
         }
       }
+
       this.liveState = LiveState.NORMAL_RENDER_MATCHED
     }
 
     // hide render
     if (!matchOfPath && matchAnyway) {
+      if (typeof forceUnmount === 'function') {
+        this.liveState = LiveState.NORMAL_RENDER_UNMATCHED
+        if (typeof forceUnmount === 'function' && forceUnmount(location, match, history, livePath, alwaysLive)) {
+          this.clearScroll()
+          this.clearDomData()
+          return null
+        }
+      }
+
+      // no-mount --> mount (alwaysLive)
+      if (this.liveState === LiveState.NORMAL_RENDER_ON_INIT && alwaysLive) {
+        this.liveState = LiveState.NORMAL_RENDER_UNMATCHED
+        return null
+      }
+
       this.saveScrollPosition()
       this.hideRoute()
 
-      // show -> hide
+      // show --> hide
       if (this.liveState === LiveState.NORMAL_RENDER_MATCHED) {
         if (typeof onHide === 'function') {
-          onHide(location!, matchAnyway, livePath, alwaysLive)
+          onHide(location!, matchAnyway, history, livePath, alwaysLive)
         }
       }
       this.liveState = LiveState.HIDE_RENDER
     }
 
-    const props = { ...staticContext, location, match: matchAnyway }
+    // unmount
+    if (!matchAnyway) {
+      this.liveState = LiveState.NORMAL_RENDER_UNMATCHED
+    }
+
+    const props = { ...context, location, match: matchOfPath }
+    // const props = { history, staticContext, location, match: matchAnyway }
 
     // Preact uses an empty array as children by
     // default, so use null if that's the case.
@@ -249,11 +292,11 @@ class LiveRoute extends React.Component<IProps, any> {
     // normal render from Route
     return children && !isEmptyChildren(children)
       ? children
-      : props.match
+      : matchAnyway
       ? component
         ? React.createElement(component, props)
         : render
-        ? render(props)
+        ? render(props as any)
         : null
       : null
   }
