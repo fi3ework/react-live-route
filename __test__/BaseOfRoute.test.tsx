@@ -1,7 +1,7 @@
 import { createMemoryHistory as createHistory } from 'history'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import { MemoryRouter, Router, withRouter } from 'react-router'
+import { MemoryRouter, Route as Route2, Router, withRouter } from 'react-router'
 import NotLiveRoute from '../src/index'
 import renderStrict from './utils/renderStrict'
 
@@ -19,7 +19,7 @@ describe('A <Route>', () => {
       jest.spyOn(console, 'error').mockImplementation(() => {})
 
       expect(() => {
-        renderStrict(<Route />, node)
+        renderStrict(<Route2 />, node)
       }).toThrow(/You should not use <Route> outside a <Router>/)
     })
   })
