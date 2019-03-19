@@ -5,8 +5,8 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { isValidElementType } from 'react-is'
 import { match, matchPath, RouteComponentProps, RouteProps } from 'react-router'
-import * as invariant from 'tiny-invariant'
-import * as warning from 'tiny-warning'
+import invariant from 'tiny-invariant'
+import warning from 'tiny-warning'
 
 declare var __DEV__: boolean
 
@@ -198,7 +198,7 @@ class LiveRoute extends React.Component<PropsType, any> {
     } = this.props
     let { children } = this.props
     const context = { history, location, match, staticContext }
-    // invariant(context, 'You should not use <Route> outside a <Router>')
+    invariant(context, 'You should not use <Route> outside a <Router>')
 
     const matchOfPath = this.props.path ? matchPath(location.pathname, this.props) : context.match
     const matchOfLivePath = this.isLivePathMatch(livePath, alwaysLive, location!.pathname, {

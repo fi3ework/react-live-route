@@ -1,6 +1,7 @@
 es
-dist
+/dist
 node_modules
 umd
 !rollup.config.js
 /coverage
+/npm-debug.log

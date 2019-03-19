@@ -8,6 +8,7 @@
     "strict": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "outDir": "dist/",
     "module": "commonjs",
     "target": "es5",
