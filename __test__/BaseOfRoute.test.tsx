@@ -313,24 +313,24 @@ describe('A <Route>', () => {
         expect(node.innerHTML).toContain(text)
       })
 
-      describe('that returns `undefined`', () => {
-        it('logs a warning to the console and renders nothing', () => {
-          jest.spyOn(console, 'warn').mockImplementation(() => {})
+      // describe('that returns `undefined`', () => {
+      //   it('logs a warning to the console and renders nothing', () => {
+      //     jest.spyOn(console, 'warn').mockImplementation(() => {})
 
-          renderStrict(
-            <MemoryRouter initialEntries={['/']}>
-              <Route path="/" children={() => undefined} />
-            </MemoryRouter>,
-            node
-          )
+      //     renderStrict(
+      //       <MemoryRouter initialEntries={['/']}>
+      //         <Route path="/" children={() => undefined} />
+      //       </MemoryRouter>,
+      //       node
+      //     )
 
-          expect(node.innerHTML).toEqual('')
+      //     expect(node.innerHTML).toEqual('')
 
-          expect(console.warn).toHaveBeenCalledWith(
-            expect.stringContaining('You returned `undefined` from the `children` function')
-          )
-        })
-      })
+      //     expect(console.warn).toHaveBeenCalledWith(
+      //       expect.stringContaining('You returned `undefined` from the `children` function')
+      //     )
+      //   })
+      // })
     })
 
     describe('that is an empty array (as in Preact)', () => {

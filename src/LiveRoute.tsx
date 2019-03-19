@@ -209,56 +209,55 @@ class LiveRoute extends React.Component<PropsType, any> {
     })
     const matchAnyway = matchOfPath || matchOfLivePath
 
-    // normal render
+    // no render
+    if (
+      !matchAnyway ||
+      (matchAnyway &&
+        !matchOfPath &&
+        (this.liveState === LiveState.NORMAL_RENDER_ON_INIT || this.liveState === LiveState.NORMAL_RENDER_UNMATCHED))
+    ) {
+      debugLog('--- not match ---')
+      this.liveState = LiveState.NORMAL_RENDER_UNMATCHED
+      return null
+    }
+
+    // normal render || hide render
     if (matchOfPath) {
+      debugLog('--- normal match ---')
       this.showRoute()
       this.restoreScrollPosition()
       this.clearScroll()
 
-      // hide --> show
+      // hide ➡️ show
       if (this.liveState === LiveState.HIDE_RENDER) {
         if (typeof onReappear === 'function') {
           onReappear(location!, matchAnyway, history, livePath, alwaysLive)
         }
       }
-
       this.liveState = LiveState.NORMAL_RENDER_MATCHED
-    }
+    } else {
+      debugLog('--- hide match ---')
 
-    // hide render
-    if (!matchOfPath && matchAnyway) {
-      if (typeof forceUnmount === 'function') {
+      // force unmount
+      if (typeof forceUnmount === 'function' && forceUnmount(location, match, history, livePath, alwaysLive)) {
         this.liveState = LiveState.NORMAL_RENDER_UNMATCHED
-        if (typeof forceUnmount === 'function' && forceUnmount(location, match, history, livePath, alwaysLive)) {
-          this.clearScroll()
-          this.clearDomData()
-          return null
-        }
-      }
-
-      // no-mount --> mount (alwaysLive)
-      if (this.liveState === LiveState.NORMAL_RENDER_ON_INIT && alwaysLive) {
-        this.liveState = LiveState.NORMAL_RENDER_UNMATCHED
+        this.clearScroll()
+        this.clearDomData()
         return null
       }
 
-      this.saveScrollPosition()
-      this.hideRoute()
-
-      // show --> hide
+      // show ➡️ hide
       if (this.liveState === LiveState.NORMAL_RENDER_MATCHED) {
         if (typeof onHide === 'function') {
           onHide(location!, matchAnyway, history, livePath, alwaysLive)
         }
+        this.saveScrollPosition()
+        this.hideRoute()
       }
       this.liveState = LiveState.HIDE_RENDER
     }
 
-    // unmount
-    if (!matchAnyway) {
-      this.liveState = LiveState.NORMAL_RENDER_UNMATCHED
-    }
-
+    // normal render
     const props = { ...context, location, match: matchOfPath }
     // const props = { history, staticContext, location, match: matchAnyway }
 
