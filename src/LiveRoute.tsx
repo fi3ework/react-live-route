@@ -92,9 +92,10 @@ class LiveRoute extends React.Component<PropsType, any> {
   }
 
   // get DOM of Route
-  public getRouteDom() {
+  public getRouteDom = () => {
     let routeDom = ReactDOM.findDOMNode(this)
-    this.routeDom = routeDom as CacheDom
+    this.routeDom = (routeDom as CacheDom) || this.routeDom
+    console.log(this.routeDom)
   }
 
   public hideRoute() {
@@ -258,7 +259,7 @@ class LiveRoute extends React.Component<PropsType, any> {
     }
 
     // normal render
-    const props = { ...context, location, match: matchOfPath }
+    const props = { ...context, location, match: matchOfPath, ensureDidMount: this.getRouteDom }
     // const props = { history, staticContext, location, match: matchAnyway }
 
     // Preact uses an empty array as children by
