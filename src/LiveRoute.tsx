@@ -11,7 +11,7 @@ import warning from 'tiny-warning'
 declare var __DEV__: boolean
 
 function debugLog(message: any) {
-  // console.log(message)
+  console.log(message)
 }
 
 function isEmptyChildren(children) {
@@ -26,6 +26,17 @@ interface IMatchOptions {
   strict?: boolean
   sensitive?: boolean
 }
+
+enum SideEffect {
+  SAVE_DOM_SCROLL = 'SAVE_DOM_SCROLL',
+  CLEAR_DOM_DATA = 'CLEAR_DOM_SCROLL',
+  HIDE_DOM = 'HIDE_DOM',
+  SHOW_DOM = 'SHOW_DOM',
+  ON_REAPPEAR_HOOK = 'ON_REAPPEAR_HOOK',
+  ON_HIDE_HOOK = 'ON_HIDE_HOOK',
+  NO_SIDE_EFFECT = 'NO_SIDE_EFFECT'
+}
+
 enum LiveState {
   NORMAL_RENDER_MATCHED = 'normal matched render',
   NORMAL_RENDER_UNMATCHED = 'normal unmatched render (unmount)',
@@ -63,31 +74,20 @@ class LiveRoute extends React.Component<PropsType, any> {
   public scrollPosBackup: { left: number; top: number } | null = null
   public previousDisplayStyle: string | null = null
   public liveState: LiveState = LiveState.NORMAL_RENDER_ON_INIT
+  public currentSideEffect: SideEffect[] = [SideEffect.NO_SIDE_EFFECT]
 
   public componentDidMount() {
     this.getRouteDom()
   }
 
-  // get route of DOM
   public componentDidUpdate(prevProps, prevState) {
-    // if (!this.doesRouteEnableLive()) {
-    //   return
-    // }
-
-    // // restore display when matched normally
-    // debugLog(this.liveState)
-    // if (this.liveState === LiveState.NORMAL_RENDER_MATCHED) {
-    //   this.showRoute()
-    //   this.restoreScrollPosition()
-    //   this.clearScroll()
-    // }
-
-    // get DOM if match and render
+    this.performSideEffects(this.currentSideEffect, [SideEffect.ON_REAPPEAR_HOOK, SideEffect.CLEAR_DOM_DATA])
     this.getRouteDom()
   }
 
   // clear on unmounting
   public componentWillUnmount() {
+    this.clearDomData()
     this.clearScroll()
   }
 
@@ -177,13 +177,71 @@ class LiveRoute extends React.Component<PropsType, any> {
     return null
   }
 
+  public performSideEffects = (sideEffects: SideEffect[], range: SideEffect[]) => {
+    const sideEffectsToRun = sideEffects.filter(item => range.includes(item))
+    sideEffectsToRun.forEach((sideEffect, index) => {
+      switch (sideEffect) {
+        case SideEffect.SAVE_DOM_SCROLL:
+          this.saveScrollPosition()
+          break
+        case SideEffect.HIDE_DOM:
+          this.hideRoute()
+          break
+        case SideEffect.ON_REAPPEAR_HOOK:
+          this.onHook('onReappear')
+          break
+        case SideEffect.ON_HIDE_HOOK:
+          this.onHook('onHide')
+          break
+        case SideEffect.CLEAR_DOM_DATA:
+          this.clearScroll()
+          this.clearDomData()
+          break
+      }
+    })
+
+    this.currentSideEffect = sideEffects.filter(item => !range.includes(item)) as SideEffect[]
+  }
+
+  public getSnapshotBeforeUpdate(prevProps, prevState) {
+    this.performSideEffects(this.currentSideEffect, [SideEffect.SAVE_DOM_SCROLL, SideEffect.HIDE_DOM])
+  }
+
+  public onHook = (hookName: 'onHide' | 'onReappear') => {
+    const {
+      exact = false,
+      sensitive = false,
+      strict = false,
+      path,
+      livePath,
+      alwaysLive,
+      // from withRouter, same as RouterContext.Consumer ⬇️
+      history,
+      location,
+      match,
+      staticContext
+      // from withRouter, same as RouterContext.Consumer ⬆️
+    } = this.props
+    const hook = this[hookName]
+    const context = { history, location, match, staticContext }
+    const matchOfPath = this.props.path ? matchPath(location.pathname, this.props) : context.match
+    const matchOfLivePath = this.isLivePathMatch(livePath, alwaysLive, location!.pathname, {
+      path,
+      exact,
+      strict,
+      sensitive
+    })
+    const matchAnyway = matchOfPath || matchOfLivePath
+    if (typeof hook === 'function') {
+      hook(location!, matchAnyway, history, livePath, alwaysLive)
+    }
+  }
+
   public render() {
     const {
       exact = false,
       sensitive = false,
       strict = false,
-      onReappear,
-      onHide,
       forceUnmount,
       path,
       livePath,
@@ -199,7 +257,7 @@ class LiveRoute extends React.Component<PropsType, any> {
     } = this.props
     let { children } = this.props
     const context = { history, location, match, staticContext }
-    invariant(context, 'You should not use <Route> outside a <Router>')
+    invariant(!!context, 'You should not use <Route> outside a <Router>')
 
     const matchOfPath = this.props.path ? matchPath(location.pathname, this.props) : context.match
     const matchOfLivePath = this.isLivePathMatch(livePath, alwaysLive, location!.pathname, {
@@ -231,36 +289,27 @@ class LiveRoute extends React.Component<PropsType, any> {
 
       // hide ➡️ show
       if (this.liveState === LiveState.HIDE_RENDER) {
-        if (typeof onReappear === 'function') {
-          onReappear(location!, matchAnyway, history, livePath, alwaysLive)
-        }
+        this.currentSideEffect = [SideEffect.ON_REAPPEAR_HOOK]
       }
       this.liveState = LiveState.NORMAL_RENDER_MATCHED
     } else {
       debugLog('--- hide match ---')
-
       // force unmount
       if (typeof forceUnmount === 'function' && forceUnmount(location, match, history, livePath, alwaysLive)) {
         this.liveState = LiveState.NORMAL_RENDER_UNMATCHED
-        this.clearScroll()
-        this.clearDomData()
+        this.currentSideEffect = [SideEffect.CLEAR_DOM_DATA]
         return null
       }
 
       // show ➡️ hide
       if (this.liveState === LiveState.NORMAL_RENDER_MATCHED) {
-        if (typeof onHide === 'function') {
-          onHide(location!, matchAnyway, history, livePath, alwaysLive)
-        }
-        this.saveScrollPosition()
-        this.hideRoute()
+        this.currentSideEffect = [SideEffect.ON_HIDE_HOOK, SideEffect.SAVE_DOM_SCROLL, SideEffect.HIDE_DOM]
       }
       this.liveState = LiveState.HIDE_RENDER
     }
 
     // normal render
     const props = { ...context, location, match: matchOfPath, ensureDidMount: this.getRouteDom }
-    // const props = { history, staticContext, location, match: matchAnyway }
 
     // Preact uses an empty array as children by
     // default, so use null if that's the case.
