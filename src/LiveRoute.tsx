@@ -10,8 +10,10 @@ import warning from 'tiny-warning'
 
 declare var __DEV__: boolean
 
-function debugLog(message: any) {
-  console.log(message)
+function debugLog(...message: any) {
+  // if (__DEV__) {
+  // console.log(...message)
+  // }
 }
 
 function isEmptyChildren(children) {
@@ -29,19 +31,25 @@ interface IMatchOptions {
 
 enum SideEffect {
   SAVE_DOM_SCROLL = 'SAVE_DOM_SCROLL',
-  CLEAR_DOM_DATA = 'CLEAR_DOM_SCROLL',
+  RESTORE_DOM_SCROLL = 'RESTORE_DOM_SCROLL',
+  CLEAR_DOM_SCROLL = 'CLEAR_DOM_SCROLL',
+  RESET_SCROLL = 'RESET_SCROLL',
+
   HIDE_DOM = 'HIDE_DOM',
   SHOW_DOM = 'SHOW_DOM',
+  CLEAR_DOM_DATA = 'CLEAR_DOM_DATA',
+
   ON_REAPPEAR_HOOK = 'ON_REAPPEAR_HOOK',
   ON_HIDE_HOOK = 'ON_HIDE_HOOK',
+
   NO_SIDE_EFFECT = 'NO_SIDE_EFFECT'
 }
 
 enum LiveState {
-  NORMAL_RENDER_MATCHED = 'normal matched render',
-  NORMAL_RENDER_UNMATCHED = 'normal unmatched render (unmount)',
   NORMAL_RENDER_ON_INIT = 'normal render (matched or unmatched)',
-  HIDE_RENDER = 'hide route when livePath matched'
+  NORMAL_RENDER_MATCHED = 'normal matched render',
+  HIDE_RENDER = 'hide route when livePath matched',
+  NORMAL_RENDER_UNMATCHED = 'normal unmatched render (unmount)'
 }
 
 type OnRoutingHook = (
@@ -82,6 +90,12 @@ class LiveRoute extends React.Component<PropsType, any> {
 
   public componentDidUpdate(prevProps, prevState) {
     this.performSideEffects(this.currentSideEffect, [SideEffect.ON_REAPPEAR_HOOK, SideEffect.CLEAR_DOM_DATA])
+    this.performSideEffects(this.currentSideEffect, [
+      SideEffect.SHOW_DOM,
+      SideEffect.RESTORE_DOM_SCROLL,
+      SideEffect.CLEAR_DOM_SCROLL
+    ])
+    this.performSideEffects(this.currentSideEffect, [SideEffect.RESET_SCROLL])
     this.getRouteDom()
   }
 
@@ -95,7 +109,6 @@ class LiveRoute extends React.Component<PropsType, any> {
   public getRouteDom = () => {
     let routeDom = ReactDOM.findDOMNode(this)
     this.routeDom = (routeDom as CacheDom) || this.routeDom
-    console.log(this.routeDom)
   }
 
   public hideRoute() {
@@ -133,6 +146,13 @@ class LiveRoute extends React.Component<PropsType, any> {
     debugLog(scroll)
     if (scroll && this.routeDom) {
       window.scrollTo(scroll.left, scroll.top)
+    }
+  }
+
+  // reset scroll position
+  public resetScrollPosition() {
+    if (scroll && this.routeDom) {
+      window.scrollTo(0, 0)
     }
   }
 
@@ -178,6 +198,7 @@ class LiveRoute extends React.Component<PropsType, any> {
   }
 
   public performSideEffects = (sideEffects: SideEffect[], range: SideEffect[]) => {
+    debugLog(`${this.props.name} perform side effects:`, sideEffects, range)
     const sideEffectsToRun = sideEffects.filter(item => range.includes(item))
     sideEffectsToRun.forEach((sideEffect, index) => {
       switch (sideEffect) {
@@ -187,11 +208,23 @@ class LiveRoute extends React.Component<PropsType, any> {
         case SideEffect.HIDE_DOM:
           this.hideRoute()
           break
+        case SideEffect.SHOW_DOM:
+          this.showRoute()
+          break
+        case SideEffect.RESTORE_DOM_SCROLL:
+          this.restoreScrollPosition()
+          break
         case SideEffect.ON_REAPPEAR_HOOK:
           this.onHook('onReappear')
           break
         case SideEffect.ON_HIDE_HOOK:
           this.onHook('onHide')
+          break
+        case SideEffect.CLEAR_DOM_SCROLL:
+          this.clearScroll()
+          break
+        case SideEffect.RESET_SCROLL:
+          this.resetScrollPosition()
           break
         case SideEffect.CLEAR_DOM_DATA:
           this.clearScroll()
@@ -205,6 +238,7 @@ class LiveRoute extends React.Component<PropsType, any> {
 
   public getSnapshotBeforeUpdate(prevProps, prevState) {
     this.performSideEffects(this.currentSideEffect, [SideEffect.SAVE_DOM_SCROLL, SideEffect.HIDE_DOM])
+    return null
   }
 
   public onHook = (hookName: 'onHide' | 'onReappear') => {
@@ -276,6 +310,7 @@ class LiveRoute extends React.Component<PropsType, any> {
         (this.liveState === LiveState.NORMAL_RENDER_ON_INIT || this.liveState === LiveState.NORMAL_RENDER_UNMATCHED))
     ) {
       debugLog('--- not match ---')
+      this.currentSideEffect = [SideEffect.CLEAR_DOM_SCROLL]
       this.liveState = LiveState.NORMAL_RENDER_UNMATCHED
       return null
     }
@@ -283,13 +318,16 @@ class LiveRoute extends React.Component<PropsType, any> {
     // normal render || hide render
     if (matchOfPath) {
       debugLog('--- normal match ---')
-      this.showRoute()
-      this.restoreScrollPosition()
-      this.clearScroll()
+      this.currentSideEffect = [SideEffect.RESET_SCROLL]
 
       // hide ➡️ show
       if (this.liveState === LiveState.HIDE_RENDER) {
-        this.currentSideEffect = [SideEffect.ON_REAPPEAR_HOOK]
+        this.currentSideEffect = [
+          SideEffect.SHOW_DOM,
+          SideEffect.RESTORE_DOM_SCROLL,
+          SideEffect.CLEAR_DOM_SCROLL,
+          SideEffect.ON_REAPPEAR_HOOK
+        ]
       }
       this.liveState = LiveState.NORMAL_RENDER_MATCHED
     } else {
@@ -336,14 +374,14 @@ class LiveRoute extends React.Component<PropsType, any> {
       }
     }
 
-    //
+    const componentInstance = component && React.createElement(component, props)
 
     // normal render from Route
     return children && !isEmptyChildren(children)
       ? children
       : matchAnyway
       ? component
-        ? React.createElement(component, props)
+        ? componentInstance
         : render
         ? render(props as any)
         : null

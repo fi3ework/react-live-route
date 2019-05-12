@@ -1,7 +1,11 @@
 es
+.build.es5
+.build.es6
 /dist
+/lib
 node_modules
 umd
 !rollup.config.js
 /coverage
 /npm-debug.log
+/.rts2_cache*

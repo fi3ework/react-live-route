@@ -170,6 +170,24 @@ const LiveRoute = withRouter(NotLiveRoute)
 <LiveRoute path="/list" livePath="/user/:id" component={List} forceUnmount={(location, match)=> match.params.id === 27}/>
 ```
 
+### ensureDidMount
+
+ensureDidMount is useful when using a route with `react-loadable`. Cause `react-loadable` will load the route component asynchronous. So the route component must give a hint to help react-live-route know when the real component is loaded so the DOM could be got.
+
+```jsx
+const LoadableItems = Loadable({
+  loader: () => import("./list"),
+  loading: () => () => <p>xxx</p>
+})
+```
+
+`List` item:
+```jsx
+  componentDidMount() {
+    this.props.ensureDidMount()
+  }
+```
+
 ## Licence
 
 MIT
