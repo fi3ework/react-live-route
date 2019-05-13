@@ -1,7 +1,7 @@
 import { createMemoryHistory as createHistory } from 'history'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import { MemoryRouter, Route as Route2, Router, withRouter } from 'react-router'
+import { MemoryRouter, Router, withRouter } from 'react-router'
 import NotLiveRoute from '../src/index'
 import renderStrict from './utils/renderStrict'
 
@@ -19,7 +19,7 @@ describe('A <Route>', () => {
       jest.spyOn(console, 'error').mockImplementation(() => {})
 
       expect(() => {
-        renderStrict(<Route2 />, node)
+        renderStrict(<Route />, node)
       }).toThrow(/You should not use <Route> outside a <Router>/)
     })
   })
@@ -313,24 +313,24 @@ describe('A <Route>', () => {
         expect(node.innerHTML).toContain(text)
       })
 
-      // describe('that returns `undefined`', () => {
-      //   it('logs a warning to the console and renders nothing', () => {
-      //     jest.spyOn(console, 'warn').mockImplementation(() => {})
+      describe('that returns `undefined`', () => {
+        it('logs a warning to the console and renders nothing', () => {
+          jest.spyOn(console, 'warn').mockImplementation(() => {})
 
-      //     renderStrict(
-      //       <MemoryRouter initialEntries={['/']}>
-      //         <Route path="/" children={() => undefined} />
-      //       </MemoryRouter>,
-      //       node
-      //     )
+          renderStrict(
+            <MemoryRouter initialEntries={['/']}>
+              <Route path="/" children={() => undefined} />
+            </MemoryRouter>,
+            node
+          )
 
-      //     expect(node.innerHTML).toEqual('')
+          expect(node.innerHTML).toEqual('')
 
-      //     expect(console.warn).toHaveBeenCalledWith(
-      //       expect.stringContaining('You returned `undefined` from the `children` function')
-      //     )
-      //   })
-      // })
+          expect(console.warn).toHaveBeenCalledWith(
+            expect.stringContaining('You returned `undefined` from the `children` function')
+          )
+        })
+      })
     })
 
     describe('that is an empty array (as in Preact)', () => {

@@ -10,7 +10,7 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "outDir": "dist/",
-    "module": "commonjs",
+    "module": "es2015",
     "target": "es5",
     "lib": ["es2017", "dom"],
     "sourceMap": true,

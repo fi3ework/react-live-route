@@ -11,9 +11,9 @@ import warning from 'tiny-warning'
 declare var __DEV__: boolean
 
 function debugLog(...message: any) {
-  // if (__DEV__) {
-  // console.log(...message)
-  // }
+  if (__DEV__) {
+    console.log(...message)
+  }
 }
 
 function isEmptyChildren(children) {
@@ -359,16 +359,16 @@ class LiveRoute extends React.Component<PropsType, any> {
       children = (children as any)(props)
 
       if (children === undefined) {
-        // if (__DEV__) {
-        //   const { path } = this.props
+        if (__DEV__) {
+          const { path } = this.props
 
-        //   warning(
-        //     false,
-        //     'You returned `undefined` from the `children` function of ' +
-        //       `<Route${path ? ` path="${path}"` : ''}>, but you ` +
-        //       'should have returned a React element or `null`'
-        //   )
-        // }
+          warning(
+            false,
+            'You returned `undefined` from the `children` function of ' +
+              `<Route${path ? ` path="${path}"` : ''}>, but you ` +
+              'should have returned a React element or `null`'
+          )
+        }
 
         children = null
       }
@@ -390,35 +390,35 @@ class LiveRoute extends React.Component<PropsType, any> {
 }
 
 /* tslint:disable:no-invalid-this */
-// if (__DEV__) {
-//   LiveRoute.prototype.componentDidMount = function() {
-//     warning(
-//       !(this.props.children && !isEmptyChildren(this.props.children) && this.props.component),
-//       'You should not use <Route component> and <Route children> in the same route; <Route component> will be ignored'
-//     )
+if (__DEV__) {
+  LiveRoute.prototype.componentDidMount = function() {
+    warning(
+      !(this.props.children && !isEmptyChildren(this.props.children) && this.props.component),
+      'You should not use <Route component> and <Route children> in the same route; <Route component> will be ignored'
+    )
 
-//     warning(
-//       !(this.props.children && !isEmptyChildren(this.props.children) && this.props.render),
-//       'You should not use <Route render> and <Route children> in the same route; <Route render> will be ignored'
-//     )
+    warning(
+      !(this.props.children && !isEmptyChildren(this.props.children) && this.props.render),
+      'You should not use <Route render> and <Route children> in the same route; <Route render> will be ignored'
+    )
 
-//     warning(
-//       !(this.props.component && this.props.render),
-//       'You should not use <Route component> and <Route render> in the same route; <Route render> will be ignored'
-//     )
-//   }
+    warning(
+      !(this.props.component && this.props.render),
+      'You should not use <Route component> and <Route render> in the same route; <Route render> will be ignored'
+    )
+  }
 
-//   LiveRoute.prototype.componentDidUpdate = function(prevProps) {
-//     warning(
-//       !(this.props.location && !prevProps.location),
-//       '<Route> elements should not change from uncontrolled to controlled (or vice versa). You initially used no "location" prop and then provided one on a subsequent render.'
-//     )
+  LiveRoute.prototype.componentDidUpdate = function(prevProps) {
+    warning(
+      !(this.props.location && !prevProps.location),
+      '<Route> elements should not change from uncontrolled to controlled (or vice versa). You initially used no "location" prop and then provided one on a subsequent render.'
+    )
 
-//     warning(
-//       !(!this.props.location && prevProps.location),
-//       '<Route> elements should not change from controlled to uncontrolled (or vice versa). You provided a "location" prop initially but omitted it on a subsequent render.'
-//     )
-//   }
-// }
+    warning(
+      !(!this.props.location && prevProps.location),
+      '<Route> elements should not change from controlled to uncontrolled (or vice versa). You provided a "location" prop initially but omitted it on a subsequent render.'
+    )
+  }
+}
 
 export default LiveRoute
