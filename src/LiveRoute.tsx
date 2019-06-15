@@ -199,7 +199,7 @@ class LiveRoute extends React.Component<PropsType, any> {
 
   public performSideEffects = (sideEffects: SideEffect[], range: SideEffect[]) => {
     debugLog(`${this.props.name} perform side effects:`, sideEffects, range)
-    const sideEffectsToRun = sideEffects.filter(item => range.includes(item))
+    const sideEffectsToRun = sideEffects.filter(item => range.indexOf(item) >= 0)
     sideEffectsToRun.forEach((sideEffect, index) => {
       switch (sideEffect) {
         case SideEffect.SAVE_DOM_SCROLL:
@@ -233,7 +233,7 @@ class LiveRoute extends React.Component<PropsType, any> {
       }
     })
 
-    this.currentSideEffect = sideEffects.filter(item => !range.includes(item)) as SideEffect[]
+    this.currentSideEffect = sideEffects.filter(item => range.indexOf(item) < 0) as SideEffect[]
   }
 
   public getSnapshotBeforeUpdate(prevProps, prevState) {
