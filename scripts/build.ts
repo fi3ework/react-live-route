@@ -65,7 +65,8 @@ const rollupPlugins = [
   require('rollup-plugin-node-resolve')(),
   require('rollup-plugin-filesize')(),
   babel({
-    plugins: ['annotate-pure-calls', 'dev-expression'],
+    runtimeHelpers: true,
+    plugins: ['@babel/plugin-transform-runtime', 'annotate-pure-calls', 'dev-expression'],
     exclude: 'node_modules/**'
   }),
   replace({
