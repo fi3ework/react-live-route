@@ -237,7 +237,11 @@ class LiveRoute extends React.Component<PropsType, any> {
   }
 
   public getSnapshotBeforeUpdate(prevProps, prevState) {
-    this.performSideEffects(this.currentSideEffect, [SideEffect.SAVE_DOM_SCROLL, SideEffect.HIDE_DOM])
+    this.performSideEffects(this.currentSideEffect, [
+      SideEffect.ON_HIDE_HOOK,
+      SideEffect.SAVE_DOM_SCROLL,
+      SideEffect.HIDE_DOM
+    ])
     return null
   }
 
@@ -256,7 +260,7 @@ class LiveRoute extends React.Component<PropsType, any> {
       staticContext
       // from withRouter, same as RouterContext.Consumer ⬆️
     } = this.props
-    const hook = this[hookName]
+    const hook = this.props[hookName]
     const context = { history, location, match, staticContext }
     const matchOfPath = this.props.path ? matchPath(location.pathname, this.props) : context.match
     const matchOfLivePath = this.isLivePathMatch(livePath, alwaysLive, location!.pathname, {
