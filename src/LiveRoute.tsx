@@ -2,7 +2,7 @@
 
 import { History, Location } from 'history'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
+import {findDOMNode} from 'react-dom'
 import { isValidElementType } from 'react-is'
 import { match, matchPath, RouteComponentProps, RouteProps } from 'react-router'
 import invariant from 'tiny-invariant'
@@ -96,7 +96,6 @@ class LiveRoute extends React.Component<PropsType, any> {
       SideEffect.CLEAR_DOM_SCROLL
     ])
     this.performSideEffects(this.currentSideEffect, [SideEffect.RESET_SCROLL])
-    this.getRouteDom()
   }
 
   // clear on unmounting
@@ -107,7 +106,7 @@ class LiveRoute extends React.Component<PropsType, any> {
 
   // get DOM of Route
   public getRouteDom = () => {
-    let routeDom = ReactDOM.findDOMNode(this)
+    let routeDom = findDOMNode(this)
     this.routeDom = (routeDom as CacheDom) || this.routeDom
   }
 
