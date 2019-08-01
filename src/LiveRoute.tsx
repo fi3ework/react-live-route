@@ -107,7 +107,12 @@ class LiveRoute extends React.Component<PropsType, any> {
 
   // get DOM of Route
   public getRouteDom = () => {
-    let routeDom = ReactDOM.findDOMNode(this)
+    let routeDom: Element | null | Text = null
+    try {
+      routeDom = ReactDOM.findDOMNode(this)
+    } catch {
+      // TODO:
+    }
     this.routeDom = (routeDom as CacheDom) || this.routeDom
   }
 
