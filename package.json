@@ -7,7 +7,7 @@
   "authors": "fi3ework",
   "main": "lib/index.js",
   "module": "lib/index.module.js",
-  "typings": "lib/LiveRoute.d.ts",
+  "typings": "lib/index.d.ts",
   "sideEffects": false,
   "scripts": {
     "build": "rm -fr lib && ts-node scripts/build.ts",
