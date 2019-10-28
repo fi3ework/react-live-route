@@ -65,15 +65,16 @@ There is a item list page, click on the items on this page will enter the item d
 - 🔒 Minimally invasive, all you need to do is import LiveRoute.
 - ✌️ Super easy API.
 
-## Caveat ⚠️
+## Hint
 
-- LiveRoute **SHOULD NOT** be wrapped by `Switch` directly, cause `Switch` only render the first matched child element so that LiveRoute may be skipped directly. You can move LiveRoute from `Switch` to the outside.
+- **Using with <Switch />, see [Use in `<Switch>`](#Use in `<Switch>`) for detail.**
+- **Using with code splitting, see [ensureDidMount](#ensureDidMount (code-splitting)) for detail.**
 - If LiveRoute's parent route is unmounted on current location, then it will also be unmounted . This is determined by the top-down design principle of React. You can use LiveRoute to declares a parent route to solve this problem or stop nestting the router.
 - In some cases the DOM of LiveRoute will be modified directly and the scroll position will not change when navigation. This is not a problem with react-live-route. You can scroll the screen to the top manually and you may get some help from [this article](https://github.com/ReactTraining/react-router/blob/2b94b8f9e115bec6426be06b309b6963f4a96004/packages/react-router-dom/docs/guides/scroll-restoration.md) from react-router. By the way, if the scroll position will be restored by LiveRoute, it will come up after the scroll operation in componet of LiveRoute due to the render order of React.
 
 ## Usage
 
-### enhance the Route
+### 1. Enhance Route with withRouter
 
 The class imported from `react-live-route` **must** be wrapped by `withRouter` to touch the property of context to work as expected.
 
@@ -84,7 +85,7 @@ import { withRouter } from 'react-router-dom'
 const LiveRoute = withRouter(NotLiveRoute)
 ```
 
-### Props of LiveRoute
+### 2. Props of LiveRoute
 
 #### livePath: (string | string[])
 
@@ -124,13 +125,13 @@ const LiveRoute = withRouter(NotLiveRoute)
 <LiveRoute path="/list" alwaysLive={true} component={Modal} />
 ```
 
-#### onHide: (location, match, history, livePath, alwaysLive) => any
+#### onHide: (location, match, history, livePath, alwaysLive) => void
 
 This hook will be triggered when LiveRoute will hide in `componentWillReceiveProps` stage (so it happens before re-render).
 
 Example of usage is below.
 
-#### onReappear: (location, match, history, livePath, alwaysLive) => any
+#### onReappear: (location, match, history, livePath, alwaysLive) => void
 
 This hook will be triggered when LiveRoute will reappear from hide in `componentWillReceiveProps` stage (so it happens before re-render).
 
@@ -170,7 +171,7 @@ const LiveRoute = withRouter(NotLiveRoute)
 <LiveRoute path="/list" livePath="/user/:id" component={List} forceUnmount={(location, match)=> match.params.id === 27}/>
 ```
 
-### ensureDidMount
+### ensureDidMount (code-splitting)
 
 ensureDidMount is useful when using a route with `react-loadable`. Cause `react-loadable` will load the route component asynchronous. So the route component must give a hint to help react-live-route know when the real component is loaded so the DOM could be got.
 
@@ -187,6 +188,47 @@ const LoadableItems = Loadable({
     this.props.ensureDidMount()
   }
 ```
+
+## TIPS
+
+### Use in `<Switch>`
+
+There's some stuff extra to do when Using with `<Switch>`. If you want makes `/items` pathname alive, you must put a **placeholder** route where it should be **but renders nothing**. And put LiveRoute out of Switch.
+
+*(You have to do this because keep-alive break the origin `<Switch>` or React philosophy so we have use a placeholder route to keep the philosophy and show the real content out of <Switch>.)*
+
+```tsx
+function App() {
+  return (
+    <div className="App">
+      <Switch>
+        <Route exact path="/" component={Home} />
+        <Route path="/item/:id" component={Detail} />
+        <Route path="/about" component={About} />
+        <Route path="/items" /> // placeholder(required)
+        <Route path="*" render={NotFound} />
+      </Switch>
+      <LiveRoute
+        path="/items"
+        component={List}
+        livePath="/item/:id"
+        name="items"
+        onHide={routeState => {
+          console.log("[on hide]");
+          console.log(routeState);
+        }}
+        onReappear={routeState => {
+          console.log("[on reappear]");
+          console.log(routeState);
+        }}
+      />
+      <Bar />
+    </div>
+  );
+}
+```
+
+
 
 ## Licence
 
