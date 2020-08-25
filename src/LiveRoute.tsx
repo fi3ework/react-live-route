@@ -358,7 +358,7 @@ class LiveRoute extends React.Component<PropsType, any> {
     // normal render
     const props = { ...context, location, match: matchOfPath, ensureDidMount: this.getRouteDom }
 
-    // Preact uses an empty array as children by
+    // React uses an empty array as children by
     // default, so use null if that's the case.
     if (Array.isArray(children) && children.length === 0) {
       children = null
@@ -384,10 +384,11 @@ class LiveRoute extends React.Component<PropsType, any> {
     }
 
     const componentInstance = component && React.createElement(component, props)
+    const childInstance = children && React.cloneElement(children, props) // clone element to pass props to the child element
 
     // normal render from Route
     return children && !isEmptyChildren(children)
-      ? children
+      ? childInstance
       : matchAnyway
       ? component
         ? componentInstance
